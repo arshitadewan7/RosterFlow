@@ -311,3 +311,491 @@ footer {
   color: rgba(0,0,0,0.5);
   font-size: 0.9rem;
 }
+
+/* ======= GLOBAL ======= */
+body.gradient-bg {
+  background: linear-gradient(135deg, #f5f0ff 0%, #ffe8f0 50%, #e6faff 100%);
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1, h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: #2a2a2a;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 50px;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #222;
+}
+
+nav a {
+  margin-left: 25px;
+  text-decoration: none;
+  font-weight: 500;
+  color: #444;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #6e5cfb;
+}
+
+/* ======= MAIN CONTAINER ======= */
+.form-container {
+  max-width: 1100px;
+  margin: 50px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 0 20px;
+}
+
+/* ======= CARD STYLE ======= */
+.form-card, .table-section {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(15px);
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 30px 40px;
+}
+
+.form-card h2, .table-section h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+/* ======= FORMS ======= */
+.inline-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.inline-form input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.1);
+  font-size: 15px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.shift-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.shift-form input, .shift-form select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  font-size: 15px;
+  background: rgba(255,255,255,0.7);
+}
+
+/* ======= BUTTONS ======= */
+.btn-gradient {
+  background: linear-gradient(90deg, #c8b6ff, #ffb7c5, #a0e7e5);
+  color: #111;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 22px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.btn-gradient-wide {
+  background: linear-gradient(90deg, #c8b6ff, #ffb7c5, #a0e7e5);
+  color: #111;
+  border: none;
+  border-radius: 35px;
+  padding: 14px 34px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  align-self: flex-start;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover, .btn-gradient-wide:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(200, 182, 255, 0.4);
+}
+
+/* ======= TABLE ======= */
+.table-section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.table-section th, .table-section td {
+  padding: 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.table-section th {
+  background: rgba(200, 182, 255, 0.25);
+  color: #333;
+  font-weight: 600;
+}
+
+.table-section td button {
+  background: linear-gradient(90deg, #ffb7c5, #ff8080);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.table-section td button:hover {
+  transform: scale(1.08);
+  background: #ff8080;
+}
+
+/* ---------- GLOBAL RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #e8e3ff, #fde7f9);
+  color: #2e2e2e;
+  min-height: 100vh;
+}
+
+/* ---------- HEADER ---------- */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 3rem;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  border-radius: 0 0 25px 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header img {
+  height: 48px;
+  filter: drop-shadow(0 0 6px rgba(140, 100, 255, 0.3));
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  margin-left: 2rem;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, #8f66ff, #f69bff);
+  transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+  width: 100%;
+}
+
+/* ---------- DASHBOARD CONTAINER ---------- */
+.dashboard-container {
+  max-width: 1100px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ---------- DASHBOARD CARDS ---------- */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  border-radius: 25px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 2rem 2.5rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- HEADINGS ---------- */
+h1, h2, h3 {
+  font-weight: 600;
+  color: #1d1d1d;
+  margin-bottom: 1rem;
+  letter-spacing: 0.3px;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* ---------- SUMMARY SECTION ---------- */
+.dashboard-summary {
+  background: linear-gradient(145deg, #ffffffb3, #f9f4ffb3);
+  border-left: 4px solid #c49bff;
+  padding: 2rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* ---------- CHART SECTIONS ---------- */
+.chart-section {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 25px;
+  padding: 1.5rem 2rem 2rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+}
+
+.chart-section canvas {
+  width: 100%;
+  max-height: 350px;
+  margin-top: 1.2rem;
+}
+
+/* ---------- CALENDAR GRID ---------- */
+#calendarHeatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22px, 1fr));
+  gap: 6px;
+  margin-top: 1.2rem;
+}
+
+#calendarHeatmapGrid div {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background-color: #d4ccff;
+  transition: transform 0.2s ease;
+}
+
+#calendarHeatmapGrid div:hover {
+  transform: scale(1.15);
+  background-color: #bba2ff;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  nav a {
+    margin: 0 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-card {
+    padding: 1.5rem;
+  }
+}
+
+/* =========================================
+   Dashboard aesthetic fix — match Add Shifts
+========================================= */
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: radial-gradient(circle at top right, #f8eaff, #ffe8f0, #e7f7ff);
+  color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-attachment: fixed;
+  backdrop-filter: blur(10px);
+}
+
+/* Header consistency */
+header {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(200, 182, 255, 0.25);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 0 30px 30px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header img {
+  height: 60px;
+  transition: transform 0.3s ease;
+}
+header img:hover { transform: scale(1.05); }
+
+nav a {
+  color: #222;
+  text-decoration: none;
+  font-weight: 600;
+  margin: 0 16px;
+  font-family: "Outfit", sans-serif;
+  transition: color 0.3s;
+}
+nav a:hover { color: var(--lavender); }
+
+/* Dashboard wrapper (same glass as Add Shifts) */
+.dashboard-container {
+  max-width: 1100px;
+  margin: 60px auto;
+  background: var(--white-glass);
+  border-radius: 30px;
+  box-shadow: 0 20px 50px var(--shadow);
+  padding: 40px 50px;
+  backdrop-filter: blur(25px);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Dashboard sections — identical to Add Shifts cards */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(200, 182, 255, 0.25);
+  padding: 35px 45px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(200, 182, 255, 0.35);
+}
+
+/* Titles same tone + font */
+.dashboard-card h2,
+.dashboard-card h3 {
+  font-family: "Outfit", sans-serif;
+  color: #2d2d2d;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Weekly summary box same pastel panel */
+.dashboard-summary {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(200, 182, 255, 0.2);
+  padding: 25px 30px;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.05rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* Charts framed like input boxes */
+.chart-section {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  padding: 30px 40px;
+  box-shadow: 0 8px 30px rgba(200, 182, 255, 0.25);
+}
+
+.chart-section canvas {
+  width: 100%;
+  height: auto;
+  max-height: 350px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 12px;
+}
+
+/* Matching button glow */
+button, .export-btn {
+  background: linear-gradient(90deg, var(--blush), var(--lavender), var(--mint));
+  border: none;
+  color: #333;
+  font-weight: 600;
+  border-radius: 40px;
+  padding: 12px 30px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(255, 200, 230, 0.5);
+  transition: all 0.3s ease;
+}
+button:hover, .export-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(255, 170, 210, 0.8);
+}
+
+/* Calendar Grid */
+#calendarHeatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22px, 1fr));
+  gap: 6px;
+  margin-top: 1.2rem;
+}
+#calendarHeatmapGrid div {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background-color: #d4ccff;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+#calendarHeatmapGrid div:hover {
+  transform: scale(1.15);
+  background-color: #bba2ff;
+}
+

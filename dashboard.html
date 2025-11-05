@@ -20,42 +20,42 @@
 </header>
 
 
-  <main id="dashboard">
+  <main class="dashboard-container" id="dashboard">
+  <section class="dashboard-card dashboard-summary" id="dashboardSummary">
     <h2>Weekly Overview</h2>
-    <div id="dashboardSummary" class="summary-cards"></div>
+    <!-- summary text injected by script.js -->
+  </section>
 
-    <section class="chart-section">
-      <h3>Work Hours Comparison</h3>
-      <canvas id="hoursChart" height="120"></canvas>
-    </section>
+  <section class="dashboard-card chart-section">
+    <h2>Work Hours Comparison</h2>
+    <canvas id="hoursChart"></canvas>
+  </section>
 
-    <section class="chart-section">
-      <h3>Weekly Income Flow</h3>
-      <canvas id="incomeChart" height="120"></canvas>
-    </section>
+  <section class="dashboard-card chart-section">
+    <h2>Weekly Income Flow</h2>
+    <canvas id="incomeChart"></canvas>
+  </section>
 
-    <section class="chart-section">
-  <h3>Hours by Workplace</h3>
-  <canvas id="hoursDonutChart" height="120"></canvas>
-</section>
+  <section class="dashboard-card chart-section">
+    <h2>Hours by Workplace</h2>
+    <canvas id="hoursDonutChart"></canvas>
+  </section>
 
-<section class="chart-section">
-  <h3>Income by Workplace</h3>
-  <canvas id="incomeDonutChart" height="120"></canvas>
-</section>
+  <section class="dashboard-card chart-section">
+    <h2>Income by Workplace</h2>
+    <canvas id="incomeDonutChart"></canvas>
+  </section>
 
+  <section class="dashboard-card">
+    <h2>Work Restrictions</h2>
+    <div id="restrictionSection"></div>
+  </section>
 
-    <section id="calendarHeatmap">
-      <h3>Calendar View</h3>
-      <div id="calendarGrid"></div>
-    </section>
-  </main>
-
-  <section class="chart-section">
-  <h3>Calendar Heatmap</h3>
-  <div id="calendarHeatmapGrid"></div>
-</section>
-
+  <section class="dashboard-card">
+    <h2>Calendar Heatmap</h2>
+    <div id="calendarHeatmapGrid"></div>
+  </section>
+</main>
 
   <script src="script.js"></script>
 </body>

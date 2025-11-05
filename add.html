@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Work & Shifts</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Workplaces & Shifts | RosterFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <header>
-    <h1>Add Workplaces & Shifts</h1>
+
+<body class="gradient-bg">
+  <header class="navbar">
+    <h1 class="logo">RosterFlow</h1>
     <nav>
       <a href="dashboard.html">Dashboard</a>
       <a href="calendar.html">Calendar</a>
@@ -17,36 +19,56 @@
     </nav>
   </header>
 
-  <main>
-    <h2>Add New Workplace</h2>
-    <form id="workplaceForm">
-      <input type="text" id="newWorkplace" placeholder="Enter new workplace name" required>
-      <button type="submit">Add Workplace</button>
-    </form>
+  <main class="form-container">
+    <section class="form-card">
+      <h2>Add New Workplace</h2>
+      <form id="workplaceForm" class="inline-form">
+        <input type="text" id="newWorkplace" placeholder="Enter new workplace name" required />
+        <button type="submit" class="btn-gradient">Add Workplace</button>
+      </form>
+    </section>
 
-    <h2>Add Work Shift</h2>
-    <form id="shiftForm">
-      <label>Job:
-        <select id="job"></select>
-      </label>
-      <label>Date:<input type="date" id="date" required></label>
-      <label>Start:<input type="time" id="start" required></label>
-      <label>End:<input type="time" id="end" required></label>
-      <label>Rate (AUD):<input type="number" id="rate" value="30"></label>
-      <label for="notes">Notes (optional):</label>
-<input type="text" id="notes" placeholder="e.g. Cosmetics Department, Stockroom, Shift change note...">
-      <button type="submit">Add Shift</button>
-      
+    <section class="form-card">
+      <h2>Add Work Shift</h2>
+      <form id="shiftForm" class="shift-form">
+        <div class="form-grid">
+          <label>Job:
+            <select id="job" required></select>
+          </label>
+          <label>Date:
+            <input type="date" id="date" required />
+          </label>
+          <label>Start:
+            <input type="time" id="start" required />
+          </label>
+          <label>End:
+            <input type="time" id="end" required />
+          </label>
+          <label>Rate (AUD):
+            <input type="number" id="rate" value="30" step="0.01" />
+          </label>
+          <label>Notes:
+            <input type="text" id="notes" placeholder="e.g. Cosmetics Department" />
+          </label>
+        </div>
+        <button type="submit" class="btn-gradient-wide">Add Shift</button>
+      </form>
+    </section>
 
-    </form>
-    
-
-    <table id="shiftsTable">
-      <thead><tr><th>Job</th><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Income</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <section class="table-section">
+      <h2>Work Shift Summary</h2>
+      <table id="shiftsTable">
+        <thead>
+          <tr>
+            <th>Job</th><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Income</th><th>Notes</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
