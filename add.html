@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Work & Shifts</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Add Workplaces & Shifts</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="calendar.html">Calendar</a>
+      <a href="income.html">Income</a>
+      <a href="conflicts.html">Conflicts</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Add New Workplace</h2>
+    <form id="workplaceForm">
+      <input type="text" id="newWorkplace" placeholder="Enter new workplace name" required>
+      <button type="submit">Add Workplace</button>
+    </form>
+
+    <h2>Add Work Shift</h2>
+    <form id="shiftForm">
+      <label>Job:
+        <select id="job"></select>
+      </label>
+      <label>Date:<input type="date" id="date" required></label>
+      <label>Start:<input type="time" id="start" required></label>
+      <label>End:<input type="time" id="end" required></label>
+      <label>Rate (AUD):<input type="number" id="rate" value="30"></label>
+      <button type="submit">Add Shift</button>
+    </form>
+
+    <table id="shiftsTable">
+      <thead><tr><th>Job</th><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Income</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

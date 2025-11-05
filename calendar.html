@@ -3,26 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RosterFlow Dashboard</title>
+  <title>Calendar View</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
-    <h1>RosterFlow</h1>
+    <h1>Work Calendar</h1>
     <nav>
+      <a href="index.html">Dashboard</a>
       <a href="add.html">Add Shifts</a>
-      <a href="calendar.html">Calendar</a>
       <a href="income.html">Income</a>
       <a href="conflicts.html">Conflicts</a>
     </nav>
   </header>
 
   <main>
-    <h2>Weekly Overview</h2>
-    <div id="dashboardSummary"></div>
-    <canvas id="hoursChart" height="140"></canvas>
-    <canvas id="incomeChart" height="140"></canvas>
+    <div id="calendarContainer"></div>
   </main>
 
   <script src="script.js"></script>
