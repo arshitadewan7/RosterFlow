@@ -354,13 +354,13 @@ footer {
 }
 
 
-/* ---------- LANDING PAGE ---------- */
+/* ---------- FUTURISTIC LANDING PAGE ---------- */
 .landing-body {
   margin: 0;
   overflow: hidden;
+  background: radial-gradient(circle at 20% 30%, #0d1117, #000);
   font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top, #e3f2fd, #bbdefb);
-  color: #222;
+  color: #fff;
 }
 
 #bg-canvas {
@@ -372,53 +372,63 @@ footer {
   z-index: 0;
 }
 
-.landing-content {
+.landing-overlay {
   position: relative;
-  z-index: 1;
+  z-index: 10;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100vh;
+  align-items: center;
   text-align: center;
   backdrop-filter: blur(6px);
+  animation: fadeIn 2s ease-out;
 }
 
-.logo-3d {
-  width: 130px;
+.roster-logo {
+  width: 160px;
   height: auto;
-  margin-bottom: 10px;
-  filter: drop-shadow(0px 0px 10px rgba(0, 123, 255, 0.4));
+  filter: drop-shadow(0 0 25px rgba(0, 191, 255, 0.8));
+  animation: float 3s ease-in-out infinite alternate;
 }
 
-.landing-content h1 {
-  font-size: 3em;
-  margin: 0;
-  color: #007bff;
-  text-shadow: 0 0 10px rgba(0,123,255,0.2);
+.landing-overlay h1 {
+  font-size: 3.5em;
+  color: #00bfff;
+  text-shadow: 0 0 25px rgba(0,191,255,0.4);
+  margin: 15px 0 0 0;
+  letter-spacing: 1px;
 }
 
-.landing-content p {
+.landing-overlay p {
   font-size: 1.2em;
+  color: #d0e8ff;
   margin-top: 10px;
-  color: #444;
+  margin-bottom: 40px;
 }
 
-.landing-content button {
-  margin-top: 30px;
-  padding: 12px 26px;
-  background: linear-gradient(90deg, #007bff, #00c6ff);
-  border: none;
-  border-radius: 30px;
-  color: white;
+.landing-overlay button {
+  padding: 14px 40px;
   font-size: 16px;
+  border: none;
+  border-radius: 40px;
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  color: white;
   cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,123,255,0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 0 25px rgba(0,191,255,0.5);
+  transition: all 0.4s ease;
 }
-.landing-content button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,123,255,0.4);
+.landing-overlay button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(0,191,255,0.9);
 }
 
-
+/* Floating + fade animations */
+@keyframes float {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-12px); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}

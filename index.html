@@ -1,62 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RosterFlow Dashboard</title>
+  <title>RosterFlow</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js"></script>
 </head>
-<body>
-  <header>
+
+<body class="landing-body">
+  <div id="bg-canvas"></div>
+
+  <div class="landing-overlay">
+    <img src="assets/rosterflow-logo.svg" alt="RosterFlow Logo" class="roster-logo" />
     <h1>RosterFlow</h1>
-    <nav>
-      <a href="add.html">Add Shifts</a>
-      <a href="calendar.html">Calendar</a>
-      <a href="income.html">Income</a>
-      <a href="conflicts.html">Conflicts</a>
-      <a href="features.html">Features</a>
+    <p>Track smarter. Visualize better. Manage effortlessly.</p>
+    <button onclick="window.location.href='dashboard.html'">Get Started →</button>
+  </div>
 
-    </nav>
-  </header>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
 
-  <main id="dashboard">
-    <h2>Weekly Overview</h2>
-    <div id="dashboardSummary" class="summary-cards"></div>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('bg-canvas').appendChild(renderer.domElement);
 
-    <section class="chart-section">
-      <h3>Work Hours Comparison</h3>
-      <canvas id="hoursChart" height="120"></canvas>
-    </section>
+    // --- LIGHTS ---
+    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+    const pointLight = new THREE.PointLight(0x00c3ff, 1.5);
+    pointLight.position.set(5, 5, 5);
+    scene.add(ambient, pointLight);
 
-    <section class="chart-section">
-      <h3>Weekly Income Flow</h3>
-      <canvas id="incomeChart" height="120"></canvas>
-    </section>
+    // --- PARTICLE FIELD ---
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 1800;
+    const posArray = new Float32Array(particlesCount * 3);
+    for (let i = 0; i < particlesCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 25;
+    }
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.06,
+      color: 0x00bfff,
+      transparent: true,
+      opacity: 0.8
+    });
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
 
-    <section class="chart-section">
-  <h3>Hours by Workplace</h3>
-  <canvas id="hoursDonutChart" height="120"></canvas>
-</section>
+    // --- 3D GLOWING RING BACKGROUND ---
+    const ringGeometry = new THREE.TorusGeometry(3.5, 0.2, 30, 200);
+    const ringMaterial = new THREE.MeshStandardMaterial({
+      color: 0x007bff,
+      emissive: 0x007bff,
+      emissiveIntensity: 1.4,
+      metalness: 0.8,
+      roughness: 0.3
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    scene.add(ring);
 
-<section class="chart-section">
-  <h3>Income by Workplace</h3>
-  <canvas id="incomeDonutChart" height="120"></canvas>
-</section>
+    // --- FLOATING LOGO PLANE ---
+    const textureLoader = new THREE.TextureLoader();
+    const logoTexture = textureLoader.load('assets/rosterflow-logo.svg');
+    const logoMaterial = new THREE.MeshBasicMaterial({ map: logoTexture, transparent: true });
+    const logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), logoMaterial);
+    logoMesh.position.z = 0.5;
+    scene.add(logoMesh);
 
+    // --- CAMERA + CONTROLS ---
+    camera.position.z = 8;
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.6;
 
-    <section id="calendarHeatmap">
-      <h3>Calendar View</h3>
-      <div id="calendarGrid"></div>
-    </section>
-  </main>
+    // --- ANIMATION LOOP ---
+    function animate() {
+      requestAnimationFrame(animate);
+      particlesMesh.rotation.y += 0.0008;
+      ring.rotation.x += 0.002;
+      ring.rotation.y += 0.003;
+      logoMesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.3;
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
 
-  <section class="chart-section">
-  <h3>Calendar Heatmap</h3>
-  <div id="calendarHeatmapGrid"></div>
-</section>
-
-
-  <script src="script.js"></script>
+    // --- RESPONSIVENESS ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
