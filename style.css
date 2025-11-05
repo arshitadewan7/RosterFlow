@@ -354,3 +354,71 @@ footer {
 }
 
 
+/* ---------- LANDING PAGE ---------- */
+.landing-body {
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #e3f2fd, #bbdefb);
+  color: #222;
+}
+
+#bg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+
+.logo-3d {
+  width: 130px;
+  height: auto;
+  margin-bottom: 10px;
+  filter: drop-shadow(0px 0px 10px rgba(0, 123, 255, 0.4));
+}
+
+.landing-content h1 {
+  font-size: 3em;
+  margin: 0;
+  color: #007bff;
+  text-shadow: 0 0 10px rgba(0,123,255,0.2);
+}
+
+.landing-content p {
+  font-size: 1.2em;
+  margin-top: 10px;
+  color: #444;
+}
+
+.landing-content button {
+  margin-top: 30px;
+  padding: 12px 26px;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  border: none;
+  border-radius: 30px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+  transition: all 0.3s ease;
+}
+.landing-content button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,123,255,0.4);
+}
+
+
