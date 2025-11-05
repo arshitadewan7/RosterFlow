@@ -38,7 +38,6 @@ if (document.getElementById('shiftForm')) {
       if (name && !workplaces.includes(name)) {
         workplaces.push(name);
         save();
-        // Add to dropdown instantly
         const o = document.createElement('option');
         o.value = o.textContent = name;
         jobSelect.appendChild(o);
@@ -100,13 +99,12 @@ if (document.getElementById('dashboardSummary')) {
     weekly[w].income += s.income;
   });
 
-  // Display summary
+  // Summary
   const summary = Object.entries(weekly)
     .map(([w, v]) => `<p>Week of ${w}: ${v.total.toFixed(1)} hrs, $${v.income.toFixed(2)}</p>`)
     .join('');
   document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
 
-  // Render charts only if data exists
   if (Object.keys(weekly).length > 0) {
     const ctx1 = document.getElementById('hoursChart');
     const ctx2 = document.getElementById('incomeChart');
@@ -114,12 +112,8 @@ if (document.getElementById('dashboardSummary')) {
     const hrs = weeks.map(w => weekly[w].total);
     const inc = weeks.map(w => weekly[w].income);
 
-    if (window.hoursChart && typeof window.hoursChart.destroy === 'function') {
-      window.hoursChart.destroy();
-    }
-    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') {
-      window.incomeChart.destroy();
-    }
+    if (window.hoursChart && typeof window.hoursChart.destroy === 'function') window.hoursChart.destroy();
+    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
 
     window.hoursChart = new Chart(ctx1, {
       type: 'bar',
@@ -137,6 +131,62 @@ if (document.getElementById('dashboardSummary')) {
         datasets: [{ label: 'Income (AUD)', data: inc, borderColor: '#28a745', fill: false }]
       },
       options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Donut Charts
+    const jobTotals = {};
+    shifts.forEach(s => {
+      jobTotals[s.job] ??= { hours: 0, income: 0 };
+      jobTotals[s.job].hours += s.hours;
+      jobTotals[s.job].income += s.income;
+    });
+
+    const jobNames = Object.keys(jobTotals);
+    const jobHours = jobNames.map(j => jobTotals[j].hours);
+    const jobIncomes = jobNames.map(j => jobTotals[j].income);
+    const colors = ['#007bff', '#28a745', '#ff9800', '#8e44ad', '#e91e63'];
+
+    if (window.hoursDonutChart && typeof window.hoursDonutChart.destroy === 'function') window.hoursDonutChart.destroy();
+    if (window.incomeDonutChart && typeof window.incomeDonutChart.destroy === 'function') window.incomeDonutChart.destroy();
+
+    const donutCtx1 = document.getElementById('hoursDonutChart');
+    window.hoursDonutChart = new Chart(donutCtx1, {
+      type: 'doughnut',
+      data: {
+        labels: jobNames,
+        datasets: [{
+          label: 'Hours',
+          data: jobHours,
+          backgroundColor: colors.slice(0, jobNames.length),
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'right' },
+          title: { display: true, text: 'Total Hours by Workplace' }
+        }
+      }
+    });
+
+    const donutCtx2 = document.getElementById('incomeDonutChart');
+    window.incomeDonutChart = new Chart(donutCtx2, {
+      type: 'doughnut',
+      data: {
+        labels: jobNames,
+        datasets: [{
+          label: 'Income',
+          data: jobIncomes,
+          backgroundColor: colors.slice(0, jobNames.length),
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'right' },
+          title: { display: true, text: 'Total Income by Workplace' }
+        }
+      }
     });
   }
 }
@@ -171,9 +221,7 @@ if (document.getElementById('incomeFlowChart')) {
   const weeks = Object.keys(weekly);
   const incomeData = weeks.map(w => weekly[w].income);
 
-  if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function') {
-    window.incomeFlowChart.destroy();
-  }
+  if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function') window.incomeFlowChart.destroy();
 
   window.incomeFlowChart = new Chart(ctx, {
     type: 'line',
@@ -194,9 +242,9 @@ if (document.getElementById('incomeFlowChart')) {
 if (document.getElementById('conflictList')) {
   const list = document.getElementById('conflictList');
   let conflicts = [];
-  let dayJobs = {}; // { date: [job1, job2] }
+  let dayJobs = {};
 
-  // 1. Detect overlapping shifts (true conflicts)
+  // Detect overlaps
   for (let i = 0; i < shifts.length; i++) {
     for (let j = i + 1; j < shifts.length; j++) {
       if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
@@ -205,16 +253,15 @@ if (document.getElementById('conflictList')) {
     }
   }
 
-  // 2. Group jobs by date
+  // Group jobs by date
   shifts.forEach(s => {
     if (!dayJobs[s.date]) dayJobs[s.date] = [];
     dayJobs[s.date].push(s.job);
   });
 
-  // 3. Build "block availability" recommendations
+  // Block availability messages
   let blockMsgs = [];
   for (const [date, jobs] of Object.entries(dayJobs)) {
-    // For each job on that date, suggest blocking all *other* workplaces
     workplaces.forEach(place => {
       if (!jobs.includes(place)) {
         jobs.forEach(worked => {
@@ -224,22 +271,16 @@ if (document.getElementById('conflictList')) {
     });
   }
 
-  // 4. Build output HTML
-  let html = '';
-
-  html += '<h3>Conflicting Shifts</h3>';
-  if (conflicts.length > 0) {
-    html += '<ul>' + conflicts.map(c => `<li>${c}</li>`).join('') + '</ul>';
-  } else {
-    html += '<p>No overlapping shifts ✅</p>';
-  }
+  // Output
+  let html = '<h3>Conflicting Shifts</h3>';
+  html += conflicts.length
+    ? `<ul>${conflicts.map(c => `<li>${c}</li>`).join('')}</ul>`
+    : '<p>No overlapping shifts ✅</p>';
 
   html += '<h3>Block Availability</h3>';
-  if (blockMsgs.length > 0) {
-    html += '<ul>' + blockMsgs.map(b => `<li>${b}</li>`).join('') + '</ul>';
-  } else {
-    html += '<p>No shifts to block yet.</p>';
-  }
+  html += blockMsgs.length
+    ? `<ul>${blockMsgs.map(b => `<li>${b}</li>`).join('')}</ul>`
+    : '<p>No shifts to block yet.</p>';
 
   list.innerHTML = html;
 }
