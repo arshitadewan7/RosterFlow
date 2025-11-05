@@ -1,20 +1,21 @@
+/* ---------- LOCAL STORAGE SETUP ---------- */
 let shifts = JSON.parse(localStorage.getItem('shifts')) || [];
 let workplaces = JSON.parse(localStorage.getItem('workplaces')) || [];
 
-// Save to localStorage
+// Save data
 function save() {
   localStorage.setItem('shifts', JSON.stringify(shifts));
   localStorage.setItem('workplaces', JSON.stringify(workplaces));
 }
 
-// Helper: get start date of the week
+// Helper: Get start of week
 function getWeek(date) {
   const d = new Date(date);
   const start = new Date(d.setDate(d.getDate() - d.getDay())); // Sunday
   return start.toISOString().slice(0, 10);
 }
 
-// Helper: check overlapping shifts
+// Helper: Check overlapping shifts
 function checkOverlap(a, b) {
   const a1 = new Date(`${a.date}T${a.start}`);
   const a2 = new Date(`${a.date}T${a.end}`);
@@ -23,11 +24,11 @@ function checkOverlap(a, b) {
   return a1 < b2 && b1 < a2;
 }
 
-/* ---------- PAGE: ADD ---------- */
+/* ---------- PAGE: ADD SHIFTS ---------- */
 if (document.getElementById('shiftForm')) {
   const jobSelect = document.getElementById('job');
 
-  // Populate workplace dropdown
+  // Populate existing workplaces
   workplaces.forEach(w => {
     const o = document.createElement('option');
     o.value = o.textContent = w;
@@ -60,6 +61,7 @@ if (document.getElementById('shiftForm')) {
     const startVal = document.getElementById('start').value;
     const endVal = document.getElementById('end').value;
     const rateVal = parseFloat(document.getElementById('rate').value) || 30;
+    const notesVal = document.getElementById('notes').value.trim();
 
     if (!job) {
       alert("Please add or select a workplace first.");
@@ -68,7 +70,16 @@ if (document.getElementById('shiftForm')) {
 
     const hours = (new Date(`${dateVal}T${endVal}`) - new Date(`${dateVal}T${startVal}`)) / 3600000;
     if (hours > 0) {
-      shifts.push({ job, date: dateVal, start: startVal, end: endVal, rate: rateVal, hours, income: hours * rateVal });
+      shifts.push({
+        job,
+        date: dateVal,
+        start: startVal,
+        end: endVal,
+        rate: rateVal,
+        notes: notesVal,
+        hours,
+        income: hours * rateVal
+      });
       save();
       location.reload();
     } else {
@@ -76,7 +87,7 @@ if (document.getElementById('shiftForm')) {
     }
   };
 
-  // Display shifts
+  // Display all shifts
   const tbody = document.querySelector('#shiftsTable tbody');
   shifts.forEach((s, i) => {
     const r = document.createElement('tr');
@@ -87,12 +98,14 @@ if (document.getElementById('shiftForm')) {
       <td>${s.end}</td>
       <td>${s.hours.toFixed(2)}</td>
       <td>$${s.income.toFixed(2)}</td>
+      <td>${s.notes ? s.notes : '-'}</td>
       <td><button onclick="deleteShift(${i})" style="background:red">Delete</button></td>
     `;
     tbody.appendChild(r);
   });
 }
 
+// Delete shift
 function deleteShift(i) {
   shifts.splice(i, 1);
   save();
@@ -109,19 +122,19 @@ if (document.getElementById('dashboardSummary')) {
     weekly[w].income += s.income;
   });
 
-  // Display weekly summary
+  // Display summary
   const summary = Object.entries(weekly)
     .map(([w, v]) => `<p>Week of ${w}: ${v.total.toFixed(1)} hrs, $${v.income.toFixed(2)}</p>`)
     .join('');
   document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
 
-  /* ----- WORK RESTRICTION TRACKER (local Adelaide time) ----- */
+  /* ----- WORK RESTRICTION TRACKER ----- */
   const restrictionDiv = document.createElement('div');
   restrictionDiv.className = "restrictions";
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay()); // Local Sunday midnight
+  weekStart.setDate(today.getDate() - today.getDay());
   const fortnightStart = new Date(weekStart);
   fortnightStart.setDate(weekStart.getDate() - 7);
 
@@ -132,17 +145,14 @@ if (document.getElementById('dashboardSummary')) {
     if (shiftDate >= fortnightStart) fortnightHours += s.hours;
   });
 
-  // Helper: create progress bars
   const createProgressBar = (value, max, color) => {
     const percent = Math.min((value / max) * 100, 100);
     return `
       <div style="background:#ddd;border-radius:10px;overflow:hidden;width:100%;height:16px;margin-top:4px;">
         <div style="width:${percent}%;background:${color};height:100%;transition:width 0.3s;"></div>
-      </div>
-    `;
+      </div>`;
   };
 
-  // Determine colors based on thresholds
   const weekColor = weekHours > 24 ? "red" : weekHours > 20 ? "orange" : "#28a745";
   const fortnightColor = fortnightHours > 48 ? "red" : fortnightHours > 40 ? "orange" : "#28a745";
 
@@ -153,7 +163,6 @@ if (document.getElementById('dashboardSummary')) {
     <p><strong>This Fortnight:</strong> ${fortnightHours.toFixed(1)} hrs / 48 hrs</p>
     ${createProgressBar(fortnightHours, 48, fortnightColor)}
   `;
-
   document.getElementById('dashboard').appendChild(restrictionDiv);
 
   /* ----- VISUAL CHARTS ----- */
@@ -179,7 +188,6 @@ if (document.getElementById('dashboardSummary')) {
       options: { plugins: { legend: { position: 'bottom' } } }
     });
 
-    // Donut Charts
     const jobTotals = {};
     shifts.forEach(s => {
       jobTotals[s.job] ??= { hours: 0, income: 0 };
@@ -195,15 +203,13 @@ if (document.getElementById('dashboardSummary')) {
     if (window.hoursDonutChart && typeof window.hoursDonutChart.destroy === 'function') window.hoursDonutChart.destroy();
     if (window.incomeDonutChart && typeof window.incomeDonutChart.destroy === 'function') window.incomeDonutChart.destroy();
 
-    const donutCtx1 = document.getElementById('hoursDonutChart');
-    window.hoursDonutChart = new Chart(donutCtx1, {
+    window.hoursDonutChart = new Chart(document.getElementById('hoursDonutChart'), {
       type: 'doughnut',
       data: { labels: jobNames, datasets: [{ data: jobHours, backgroundColor: colors.slice(0, jobNames.length) }] },
       options: { plugins: { legend: { position: 'right' } } }
     });
 
-    const donutCtx2 = document.getElementById('incomeDonutChart');
-    window.incomeDonutChart = new Chart(donutCtx2, {
+    window.incomeDonutChart = new Chart(document.getElementById('incomeDonutChart'), {
       type: 'doughnut',
       data: { labels: jobNames, datasets: [{ data: jobIncomes, backgroundColor: colors.slice(0, jobNames.length) }] },
       options: { plugins: { legend: { position: 'right' } } }
@@ -211,41 +217,49 @@ if (document.getElementById('dashboardSummary')) {
   }
 }
 
-/* ---------- PAGE: CALENDAR ---------- */
+/* ---------- PAGE: CALENDAR LIST ---------- */
 if (document.getElementById('calendarContainer')) {
   const div = document.getElementById('calendarContainer');
   const grouped = {};
   shifts.forEach(s => { (grouped[s.date] ??= []).push(s); });
-
   const sortedDates = Object.keys(grouped).sort();
   div.innerHTML = sortedDates.map(d => `
     <div class="day">
       <strong>${d}</strong>
-      <ul>${grouped[d].map(s => `<li>${s.job} (${s.start}-${s.end}) - ${s.hours.toFixed(1)}h</li>`).join('')}</ul>
-    </div>
-  `).join('');
+      <ul>${grouped[d].map(s =>
+        `<li>${s.job} (${s.start}-${s.end}) - ${s.hours.toFixed(1)}h${s.notes ? ` — <em>${s.notes}</em>` : ''}</li>`
+      ).join('')}</ul>
+    </div>`).join('');
 }
 
-/* ---------- PAGE: INCOME ---------- */
-if (document.getElementById('incomeFlowChart')) {
-  const weekly = {};
+/* ---------- PAGE: CALENDAR HEATMAP ---------- */
+if (document.getElementById('calendarHeatmapGrid')) {
+  const grid = document.getElementById('calendarHeatmapGrid');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const daysInMonth = last.getDate();
+
+  const hoursPerDay = {};
   shifts.forEach(s => {
-    const w = getWeek(s.date);
-    weekly[w] ??= { income: 0 };
-    weekly[w].income += s.income;
+    const d = new Date(s.date);
+    if (d.getMonth() === month && d.getFullYear() === year) {
+      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
+    }
   });
 
-  const ctx = document.getElementById('incomeFlowChart');
-  const weeks = Object.keys(weekly);
-  const incomeData = weeks.map(w => weekly[w].income);
-
-  if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function') window.incomeFlowChart.destroy();
-
-  window.incomeFlowChart = new Chart(ctx, {
-    type: 'line',
-    data: { labels: weeks, datasets: [{ label: 'Weekly Income (AUD)', data: incomeData, borderColor: '#ff6600', fill: false }] },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
+  grid.innerHTML = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const hours = hoursPerDay[dateStr] || 0;
+    let color = "#eee";
+    if (hours > 0 && hours <= 4) color = "#b7e4c7";
+    else if (hours <= 8) color = "#52b788";
+    else if (hours > 8) color = "#e63946";
+    grid.innerHTML += `<div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">${d}</div>`;
+  }
 }
 
 /* ---------- PAGE: CONFLICTS ---------- */
@@ -285,78 +299,6 @@ if (document.getElementById('conflictList')) {
   list.innerHTML = html;
 }
 
-if (document.getElementById('calendarHeatmapGrid')) {
-  const grid = document.getElementById('calendarHeatmapGrid');
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // Get first and last day of current month
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
-  const daysInMonth = last.getDate();
-
-  const hoursPerDay = {};
-  shifts.forEach(s => {
-    if (new Date(s.date).getMonth() === month) {
-      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
-    }
-  });
-
-  grid.innerHTML = "";
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const hours = hoursPerDay[dateStr] || 0;
-    let color = "#eee";
-    if (hours >= 1 && hours <= 4) color = "#b7e4c7";
-    else if (hours <= 8) color = "#52b788";
-    else if (hours > 8) color = "#e63946";
-
-    grid.innerHTML += `
-      <div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">
-        ${d}
-      </div>`;
-  }
-}
-
-/* ---------- PAGE: CALENDAR (Heatmap Style) ---------- */
-if (document.getElementById('calendarHeatmapGrid')) {
-  const grid = document.getElementById('calendarHeatmapGrid');
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // 1. Get first and last day of current month
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
-  const daysInMonth = last.getDate();
-
-  // 2. Group total hours per day for this month
-  const hoursPerDay = {};
-  shifts.forEach(s => {
-    const d = new Date(s.date);
-    if (d.getMonth() === month && d.getFullYear() === year) {
-      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
-    }
-  });
-
-  // 3. Render day boxes
-  grid.innerHTML = "";
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const hours = hoursPerDay[dateStr] || 0;
-    let color = "#eee";
-    if (hours > 0 && hours <= 4) color = "#b7e4c7";
-    else if (hours <= 8) color = "#52b788";
-    else if (hours > 8) color = "#e63946";
-
-    grid.innerHTML += `
-      <div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">
-        ${d}
-      </div>`;
-  }
-}
-
 /* ---------- EXPORT TO CALENDAR (.ICS) ---------- */
 if (document.getElementById('exportCalendarBtn')) {
   document.getElementById('exportCalendarBtn').addEventListener('click', () => {
@@ -372,7 +314,7 @@ if (document.getElementById('exportCalendarBtn')) {
       const end = new Date(`${s.date}T${s.end}`);
       const uid = `${s.job}-${s.date}-${s.start}`;
       const summary = `Work at ${s.job}`;
-      const desc = `Shift at ${s.job}\nTime: ${s.start} - ${s.end}\nExpected Income: $${s.income.toFixed(2)}`;
+      const desc = `Shift at ${s.job}\nTime: ${s.start} - ${s.end}\nExpected Income: $${s.income.toFixed(2)}${s.notes ? `\nNotes: ${s.notes}` : ''}`;
       const dtStart = start.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
       const dtEnd = end.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
 
@@ -396,4 +338,3 @@ if (document.getElementById('exportCalendarBtn')) {
     link.click();
   });
 }
-
