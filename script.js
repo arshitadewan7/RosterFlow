@@ -262,20 +262,26 @@ if (document.getElementById('calendarHeatmapGrid')) {
   }
 }
 
-/* ---------- PAGE: CONFLICTS ---------- */
+/* ---------- PAGE: CONFLICTS (Enhanced Visual View) ---------- */
 if (document.getElementById('conflictList')) {
   const list = document.getElementById('conflictList');
   let conflicts = [];
   let dayJobs = {};
 
+  // Detect overlapping shifts
   for (let i = 0; i < shifts.length; i++) {
     for (let j = i + 1; j < shifts.length; j++) {
       if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
-        conflicts.push(`⚠️ Clash on ${shifts[i].date} between ${shifts[i].job} (${shifts[i].start}-${shifts[i].end}) and ${shifts[j].job} (${shifts[j].start}-${shifts[j].end})`);
+        conflicts.push({
+          date: shifts[i].date,
+          a: shifts[i],
+          b: shifts[j]
+        });
       }
     }
   }
 
+  // Group jobs by date for block-availability
   shifts.forEach(s => {
     if (!dayJobs[s.date]) dayJobs[s.date] = [];
     dayJobs[s.date].push(s.job);
@@ -292,10 +298,39 @@ if (document.getElementById('conflictList')) {
     });
   }
 
+  // Build HTML output
   let html = '<h3>Conflicting Shifts</h3>';
-  html += conflicts.length ? `<ul>${conflicts.map(c => `<li>${c}</li>`).join('')}</ul>` : '<p>No overlapping shifts ✅</p>';
+  if (conflicts.length > 0) {
+    conflicts.forEach(c => {
+      html += `
+        <div class="conflict-card">
+          <p class="conflict-date">⚠️ ${c.date}</p>
+          <div class="conflict-pair">
+            <div class="shift-box">
+              <h4>${c.a.job}</h4>
+              <p>${c.a.start} – ${c.a.end}</p>
+              <p>${c.a.hours.toFixed(1)} h  |  $${c.a.income.toFixed(2)}</p>
+              ${c.a.notes ? `<p><em>${c.a.notes}</em></p>` : ''}
+            </div>
+            <div class="shift-box">
+              <h4>${c.b.job}</h4>
+              <p>${c.b.start} – ${c.b.end}</p>
+              <p>${c.b.hours.toFixed(1)} h  |  $${c.b.income.toFixed(2)}</p>
+              ${c.b.notes ? `<p><em>${c.b.notes}</em></p>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    html += '<p>No overlapping shifts ✅</p>';
+  }
+
   html += '<h3>Block Availability</h3>';
-  html += blockMsgs.length ? `<ul>${blockMsgs.map(b => `<li>${b}</li>`).join('')}</ul>` : '<p>No shifts to block yet.</p>';
+  html += blockMsgs.length
+    ? `<ul>${blockMsgs.map(b => `<li>${b}</li>`).join('')}</ul>`
+    : '<p>No shifts to block yet.</p>';
+
   list.innerHTML = html;
 }
 
