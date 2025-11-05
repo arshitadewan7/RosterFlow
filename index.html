@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RosterFlow</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>RosterFlow</h1>
+
+  <section id="entry-section">
+    <h2>Add Work Shift</h2>
+    <form id="shiftForm">
+      <label>Job:
+        <select id="job">
+          <option value="Myer">Myer</option>
+          <option value="Lovisa">Lovisa</option>
+        </select>
+      </label>
+      <label>Date:<input type="date" id="date" required></label>
+      <label>Start Time:<input type="time" id="start" required></label>
+      <label>End Time:<input type="time" id="end" required></label>
+      <label>Hourly Rate (AUD):<input type="number" id="rate" step="0.01" value="30"></label>
+      <button type="submit">Add Shift</button>
+    </form>
+  </section>
+
+  <section id="summary">
+    <h2>Roster Summary</h2>
+    <table id="shiftsTable">
+      <thead>
+        <tr><th>Job</th><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Income (AUD)</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="weeklySummary">
+    <h2>Weekly Summary</h2>
+    <div id="weekStats"></div>
+    <canvas id="hoursChart" height="120"></canvas>
+    <canvas id="incomeChart" height="120"></canvas>
+  </section>
+
+  <section id="conflicts">
+    <h2>Conflicts & Blocking Suggestions</h2>
+    <ul id="conflictList"></ul>
+  </section>
+
+  <button id="exportCalendar">Export to Calendar (.ics)</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
