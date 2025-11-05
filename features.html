@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RosterFlow Features & Documentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>RosterFlow</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="add.html">Add Shifts</a>
+      <a href="calendar.html">Calendar</a>
+      <a href="income.html">Income</a>
+      <a href="conflicts.html">Conflicts</a>
+      <a href="features.html" class="active">Features</a>
+    </nav>
+  </header>
+
+  <main class="docs">
+    <h2>RosterFlow</h2>
+    <p class="subtitle">Everything you need to know about using RosterFlow effectively.</p>
+
+    <section>
+      <h3>1. Overview</h3>
+      <p>RosterFlow is a lightweight, offline-ready work-hour and shift manager built with pure HTML, CSS, and JavaScript. It helps you track shifts, calculate income, monitor work restrictions (like 24 hours/week or 48 hours/fortnight), and detect roster conflicts across multiple workplaces.</p>
+    </section>
+
+    <section>
+      <h3>2. Add Shifts & Workplaces</h3>
+      <ul>
+        <li>Use the <strong>Add Shifts</strong> page to log your shifts.</li>
+        <li>If your workplace doesn’t exist yet, add it via the “Add New Workplace” field - it becomes your new default list.</li>
+        <li>Each shift includes:
+          <ul>
+            <li>Job name (e.g. Myer, Lovisa)</li>
+            <li>Date, start time, and end time</li>
+            <li>Hourly rate (default = $30/hr, editable)</li>
+            <li>Notes (optional - e.g. department or manager)</li>
+          </ul>
+        </li>
+        <li>Use the “Delete” button to remove shifts instantly. Everything is saved locally in your browser - no database or internet required.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>3. Dashboard</h3>
+      <ul>
+        <li>Shows weekly and fortnightly summaries of your hours and income.</li>
+        <li>Includes visual analytics:
+          <ul>
+            <li><strong>Bar Chart</strong> - Weekly hours worked</li>
+            <li><strong>Line Chart</strong> - Weekly income trends</li>
+            <li><strong>Donut Charts</strong> - Hours & income by workplace</li>
+          </ul>
+        </li>
+        <li>Displays a visual <strong>Work Restriction Tracker</strong>:
+          <ul>
+            <li>Green → Safe zone</li>
+            <li>Orange → Approaching limit</li>
+            <li>Red → Over limit (24 hrs/week or 48 hrs/fortnight)</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>4. Calendar Views</h3>
+      <ul>
+        <li><strong>List View:</strong> Shows all shifts grouped by date, including job, hours, and notes.</li>
+        <li><strong>Heatmap View:</strong> Displays a monthly color-coded grid:
+          <ul>
+            <li>🟩 1–4 hrs/day</li>
+            <li>🟢 5–8 hrs/day</li>
+            <li>🔴 Over 8 hrs/day</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>5. Income Analysis</h3>
+      <p>Displays a line graph of your weekly earnings so you can track changes in your income flow over time.</p>
+    </section>
+
+    <section>
+      <h3>6. Conflicts & Availability</h3>
+      <ul>
+        <li>Automatically detects overlapping shifts across all workplaces.</li>
+        <li>Displays visual cards showing both clashing shifts side-by-side so you can decide which to drop.</li>
+        <li>Recommends which days to <strong>block availability</strong> at other workplaces based on your roster.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>7. Export to Calendar</h3>
+      <ul>
+        <li>From the <strong>Calendar</strong> page, click “📅 Export to Calendar”.</li>
+        <li>This generates a downloadable <code>.ics</code> file (iCalendar format) containing all your shifts.</li>
+        <li>Import this file into:
+          <ul>
+            <li>Google Calendar → ⚙️ → Import → Select file</li>
+            <li>Apple Calendar → File → Import</li>
+            <li>Outlook → Open → Import Calendar</li>
+          </ul>
+        </li>
+        <li>Each calendar event includes:
+          <ul>
+            <li>Job name</li>
+            <li>Date & time</li>
+            <li>Expected income</li>
+            <li>Notes</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>8. Data & Storage</h3>
+      <ul>
+        <li>RosterFlow saves everything locally in your browser using <code>localStorage</code>.</li>
+        <li>Your data persists across sessions and refreshes, even on your phone.</li>
+        <li>No external server, login, or database setup required.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>9. Tips for Use</h3>
+      <ul>
+        <li>Bookmark RosterFlow on your phone’s home screen for quick access.</li>
+        <li>Use it weekly to add new rosters as soon as they’re released.</li>
+        <li>Export regularly to your personal calendar for a synced view.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Made with ❤️ by Arshita Dewan</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
