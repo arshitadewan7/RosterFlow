@@ -1,103 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RosterFlow</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at top right, #f8eaff, #ffe8f0, #e7f7ff);
+      font-family: "Poppins", sans-serif;
+      transition: opacity 1s ease;
+    }
+    body.fade-out { opacity: 0; }
+
+    #bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 2s ease-out;
+    }
+
+      .overlay img {
+    width: 380px;
+    height: auto;
+    animation: float 3s ease-in-out infinite alternate;
+    pointer-events: none;
+    filter: drop-shadow(0 0 25px rgba(200, 182, 255, 0.6))
+            drop-shadow(0 0 45px rgba(255, 183, 197, 0.4));
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .overlay img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 35px rgba(200, 182, 255, 0.8))
+            drop-shadow(0 0 55px rgba(255, 183, 197, 0.6));
+  }
+
+
+    .overlay button {
+      pointer-events: auto;
+      margin-top: 50px;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1em;
+      font-weight: 500;
+      background: linear-gradient(90deg, #ffb7c5, #c8b6ff, #a0e7e5);
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255, 200, 230, 0.5);
+      transition: all 0.3s ease;
+    }
+    .overlay button:hover {
+      transform: scale(1.07);
+      box-shadow: 0 0 40px rgba(255, 170, 210, 0.8);
+    }
+
+    @keyframes float {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-10px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
 </head>
 
-<body class="landing-body">
-  <div id="bg-canvas"></div>
+<body>
+  <canvas id="bg"></canvas>
 
-  <div class="landing-overlay">
-    <img src="assets/rosterflow-logo.svg" alt="RosterFlow Logo" class="roster-logo" />
-    <h1>RosterFlow</h1>
-    <p>Track smarter. Visualize better. Manage effortlessly.</p>
-    <button onclick="window.location.href='dashboard.html'">Get Started →</button>
+  <div class="overlay">
+    <img src="assets/rosterflow-logo.svg" alt="RosterFlow Logo" />
+    <button id="getStarted">Get Started</button>
   </div>
 
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
-
+  <script>
+    // === 3D BACKGROUND ===
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    document.getElementById('bg-canvas').appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
+    document.getElementById('bg').replaceWith(renderer.domElement);
 
-    // --- LIGHTS ---
-    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
-    const pointLight = new THREE.PointLight(0x00c3ff, 1.5);
-    pointLight.position.set(5, 5, 5);
-    scene.add(ambient, pointLight);
+    // Camera
+    camera.position.z = 14;
 
-    // --- PARTICLE FIELD ---
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 1800;
-    const posArray = new Float32Array(particlesCount * 3);
-    for (let i = 0; i < particlesCount * 3; i++) {
-      posArray[i] = (Math.random() - 0.5) * 25;
-    }
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.06,
-      color: 0x00bfff,
-      transparent: true,
-      opacity: 0.8
-    });
-    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particlesMesh);
+    // Lights
+    const ambient = new THREE.AmbientLight(0xffffff, 1);
+    const pinkLight = new THREE.PointLight(0xffb7c5, 1.2);
+    pinkLight.position.set(-5, 3, 5);
+    const mintLight = new THREE.PointLight(0xa0e7e5, 1.0);
+    mintLight.position.set(5, -3, 4);
+    scene.add(ambient, pinkLight, mintLight);
 
-    // --- 3D GLOWING RING BACKGROUND ---
-    const ringGeometry = new THREE.TorusGeometry(3.5, 0.2, 30, 200);
-    const ringMaterial = new THREE.MeshStandardMaterial({
-      color: 0x007bff,
-      emissive: 0x007bff,
+    // Particles
+    const geometry = new THREE.BufferGeometry();
+    const count = 3000;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count * 3; i++) positions[i] = (Math.random() - 0.5) * 40;
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const material = new THREE.PointsMaterial({ color: 0xd4b5ff, size: 0.07, opacity: 0.7, transparent: true });
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    // Glowing Ring
+    const ringGeo = new THREE.TorusGeometry(5, 0.15, 30, 200);
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0xd4b5ff,
+      emissive: 0xbfa5ff,
       emissiveIntensity: 1.4,
       metalness: 0.8,
       roughness: 0.3
     });
-    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
     scene.add(ring);
 
-    // --- FLOATING LOGO PLANE ---
-    const textureLoader = new THREE.TextureLoader();
-    const logoTexture = textureLoader.load('assets/rosterflow-logo.svg');
-    const logoMaterial = new THREE.MeshBasicMaterial({ map: logoTexture, transparent: true });
-    const logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), logoMaterial);
-    logoMesh.position.z = 0.5;
-    scene.add(logoMesh);
+    // Floating Orbs
+    const orbGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const orbMat1 = new THREE.MeshStandardMaterial({ color: 0xffc6de, emissive: 0xffb6c1, emissiveIntensity: 0.6 });
+    const orbMat2 = new THREE.MeshStandardMaterial({ color: 0xc8b6ff, emissive: 0xc8b6ff, emissiveIntensity: 0.6 });
+    const orb1 = new THREE.Mesh(orbGeo, orbMat1);
+    const orb2 = new THREE.Mesh(orbGeo, orbMat2);
+    orb1.position.set(3, 2, 0);
+    orb2.position.set(-3, -2, -1);
+    scene.add(orb1, orb2);
 
-    // --- CAMERA + CONTROLS ---
-    camera.position.z = 8;
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.6;
-
-    // --- ANIMATION LOOP ---
-    function animate() {
+    // Animation
+    let zooming = false;
+    const animate = () => {
       requestAnimationFrame(animate);
-      particlesMesh.rotation.y += 0.0008;
-      ring.rotation.x += 0.002;
-      ring.rotation.y += 0.003;
-      logoMesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.3;
-      controls.update();
+      particles.rotation.y += 0.0005;
+      ring.rotation.y += 0.002;
+      orb1.position.y = Math.sin(Date.now() * 0.001) * 1.5;
+      orb2.position.x = Math.cos(Date.now() * 0.001) * 2;
+      if (zooming && camera.position.z > 6) camera.position.z -= 0.25;
       renderer.render(scene, camera);
-    }
+    };
     animate();
 
-    // --- RESPONSIVENESS ---
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // === BUTTON CLICK (Guaranteed Working) ===
+    const btn = document.getElementById("getStarted");
+    btn.addEventListener("click", () => {
+      zooming = true;
+      document.body.classList.add("fade-out");
+
+      // ⚡ Make sure this matches your real dashboard file
+      const nextPage = "dashboard.html"; // change to "index.html" if needed
+      setTimeout(() => (window.location.href = nextPage), 1200);
     });
   </script>
 </body>
