@@ -357,3 +357,43 @@ if (document.getElementById('calendarHeatmapGrid')) {
   }
 }
 
+/* ---------- EXPORT TO CALENDAR (.ICS) ---------- */
+if (document.getElementById('exportCalendarBtn')) {
+  document.getElementById('exportCalendarBtn').addEventListener('click', () => {
+    if (shifts.length === 0) {
+      alert("No shifts to export!");
+      return;
+    }
+
+    let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//RosterFlow//EN\n";
+
+    shifts.forEach(s => {
+      const start = new Date(`${s.date}T${s.start}`);
+      const end = new Date(`${s.date}T${s.end}`);
+      const uid = `${s.job}-${s.date}-${s.start}`;
+      const summary = `Work at ${s.job}`;
+      const desc = `Shift at ${s.job}\nTime: ${s.start} - ${s.end}\nExpected Income: $${s.income.toFixed(2)}`;
+      const dtStart = start.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
+      const dtEnd = end.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
+
+      ics += [
+        "BEGIN:VEVENT",
+        `UID:${uid}`,
+        `SUMMARY:${summary}`,
+        `DESCRIPTION:${desc}`,
+        `DTSTART:${dtStart}`,
+        `DTEND:${dtEnd}`,
+        "END:VEVENT\n"
+      ].join("\n");
+    });
+
+    ics += "END:VCALENDAR";
+
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "RosterFlow_Shifts.ics";
+    link.click();
+  });
+}
+
