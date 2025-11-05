@@ -58,9 +58,13 @@ if (document.getElementById('shiftForm')) {
     const rateVal = parseFloat(document.getElementById('rate').value) || 30;
 
     const hours = (new Date(`${dateVal}T${endVal}`) - new Date(`${dateVal}T${startVal}`)) / 3600000;
-    shifts.push({ job, date: dateVal, start: startVal, end: endVal, rate: rateVal, hours, income: hours * rateVal });
-    save();
-    location.reload();
+    if (hours > 0) {
+      shifts.push({ job, date: dateVal, start: startVal, end: endVal, rate: rateVal, hours, income: hours * rateVal });
+      save();
+      location.reload();
+    } else {
+      alert("End time must be after start time.");
+    }
   };
 
   // Display shifts
@@ -102,47 +106,39 @@ if (document.getElementById('dashboardSummary')) {
     .join('');
   document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
 
-  // Charts
-  const ctx1 = document.getElementById('hoursChart');
-  const ctx2 = document.getElementById('incomeChart');
-  const weeks = Object.keys(weekly);
-  const hrs = weeks.map(w => weekly[w].total);
-  const inc = weeks.map(w => weekly[w].income);
+  // Render charts only if data exists
+  if (Object.keys(weekly).length > 0) {
+    const ctx1 = document.getElementById('hoursChart');
+    const ctx2 = document.getElementById('incomeChart');
+    const weeks = Object.keys(weekly);
+    const hrs = weeks.map(w => weekly[w].total);
+    const inc = weeks.map(w => weekly[w].income);
 
-  if (window.hoursChart) hoursChart.destroy();
-  if (window.incomeChart) incomeChart.destroy();
-
-  window.hoursChart = new Chart(ctx1, {
-    type: 'bar',
-    data: {
-      labels: weeks,
-      datasets: [{ label: 'Hours', data: hrs, backgroundColor: '#007bff' }]
-    },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  window.incomeChart = new Chart(ctx2, {
-    type: 'line',
-    data: {
-      labels: weeks,
-      datasets: [{ label: 'Income (AUD)', data: inc, borderColor: '#28a745', fill: false }]
-    },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-}
-
-/* ---------- PAGE: CONFLICTS ---------- */
-if (document.getElementById('conflictList')) {
-  const list = document.getElementById('conflictList');
-  let out = [];
-  for (let i = 0; i < shifts.length; i++) {
-    for (let j = i + 1; j < shifts.length; j++) {
-      if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
-        out.push(`⚠️ Clash on ${shifts[i].date} between ${shifts[i].job} and ${shifts[j].job}`);
-      }
+    if (window.hoursChart && typeof window.hoursChart.destroy === 'function') {
+      window.hoursChart.destroy();
     }
+    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') {
+      window.incomeChart.destroy();
+    }
+
+    window.hoursChart = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: weeks,
+        datasets: [{ label: 'Hours', data: hrs, backgroundColor: '#007bff' }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    window.incomeChart = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: weeks,
+        datasets: [{ label: 'Income (AUD)', data: inc, borderColor: '#28a745', fill: false }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
   }
-  list.innerHTML = out.length ? out.map(c => `<li>${c}</li>`).join('') : "<li>No conflicts ✅</li>";
 }
 
 /* ---------- PAGE: CALENDAR ---------- */
@@ -175,7 +171,9 @@ if (document.getElementById('incomeFlowChart')) {
   const weeks = Object.keys(weekly);
   const incomeData = weeks.map(w => weekly[w].income);
 
-  if (window.incomeFlowChart) incomeFlowChart.destroy();
+  if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function') {
+    window.incomeFlowChart.destroy();
+  }
 
   window.incomeFlowChart = new Chart(ctx, {
     type: 'line',
@@ -190,4 +188,18 @@ if (document.getElementById('incomeFlowChart')) {
     },
     options: { plugins: { legend: { position: 'bottom' } } }
   });
+}
+
+/* ---------- PAGE: CONFLICTS ---------- */
+if (document.getElementById('conflictList')) {
+  const list = document.getElementById('conflictList');
+  let out = [];
+  for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+      if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
+        out.push(`⚠️ Clash on ${shifts[i].date} between ${shifts[i].job} and ${shifts[j].job}`);
+      }
+    }
+  }
+  list.innerHTML = out.length ? out.map(c => `<li>${c}</li>`).join('') : "<li>No conflicts ✅</li>";
 }

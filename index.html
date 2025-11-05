@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RosterFlow Dashboard</title>
   <link rel="stylesheet" href="style.css">
@@ -18,11 +18,24 @@
     </nav>
   </header>
 
-  <main>
+  <main id="dashboard">
     <h2>Weekly Overview</h2>
-    <div id="dashboardSummary"></div>
-    <canvas id="hoursChart" height="140"></canvas>
-    <canvas id="incomeChart" height="140"></canvas>
+    <div id="dashboardSummary" class="summary-cards"></div>
+
+    <section class="chart-section">
+      <h3>Work Hours Comparison</h3>
+      <canvas id="hoursChart" height="120"></canvas>
+    </section>
+
+    <section class="chart-section">
+      <h3>Weekly Income Flow</h3>
+      <canvas id="incomeChart" height="120"></canvas>
+    </section>
+
+    <section id="calendarHeatmap">
+      <h3>Calendar View</h3>
+      <div id="calendarGrid"></div>
+    </section>
   </main>
 
   <script src="script.js"></script>
