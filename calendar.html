@@ -18,7 +18,23 @@
   </header>
 
   <main>
-    <div id="calendarContainer"></div>
+    <!-- 🔹 Heatmap Overview -->
+    <section>
+      <h2>Calendar Heatmap View</h2>
+      <p style="color:#555;margin-bottom:1em;">
+        Darker green = more hours worked that day. Red = overtime (>8 hrs).
+      </p>
+      <div id="calendarHeatmapGrid"></div>
+    </section>
+
+    <hr style="margin:2em 0; border:0; border-top:1px solid #ddd;">
+
+    <!-- 🔹 Detailed List -->
+    <section>
+      <h2>Detailed Calendar View</h2>
+      <p style="color:#555;">All your shifts grouped by date:</p>
+      <div id="calendarContainer"></div>
+    </section>
   </main>
 
   <script src="script.js"></script>

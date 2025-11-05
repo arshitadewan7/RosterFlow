@@ -284,3 +284,76 @@ if (document.getElementById('conflictList')) {
   html += blockMsgs.length ? `<ul>${blockMsgs.map(b => `<li>${b}</li>`).join('')}</ul>` : '<p>No shifts to block yet.</p>';
   list.innerHTML = html;
 }
+
+if (document.getElementById('calendarHeatmapGrid')) {
+  const grid = document.getElementById('calendarHeatmapGrid');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  // Get first and last day of current month
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const daysInMonth = last.getDate();
+
+  const hoursPerDay = {};
+  shifts.forEach(s => {
+    if (new Date(s.date).getMonth() === month) {
+      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
+    }
+  });
+
+  grid.innerHTML = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const hours = hoursPerDay[dateStr] || 0;
+    let color = "#eee";
+    if (hours >= 1 && hours <= 4) color = "#b7e4c7";
+    else if (hours <= 8) color = "#52b788";
+    else if (hours > 8) color = "#e63946";
+
+    grid.innerHTML += `
+      <div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">
+        ${d}
+      </div>`;
+  }
+}
+
+/* ---------- PAGE: CALENDAR (Heatmap Style) ---------- */
+if (document.getElementById('calendarHeatmapGrid')) {
+  const grid = document.getElementById('calendarHeatmapGrid');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  // 1. Get first and last day of current month
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const daysInMonth = last.getDate();
+
+  // 2. Group total hours per day for this month
+  const hoursPerDay = {};
+  shifts.forEach(s => {
+    const d = new Date(s.date);
+    if (d.getMonth() === month && d.getFullYear() === year) {
+      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
+    }
+  });
+
+  // 3. Render day boxes
+  grid.innerHTML = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const hours = hoursPerDay[dateStr] || 0;
+    let color = "#eee";
+    if (hours > 0 && hours <= 4) color = "#b7e4c7";
+    else if (hours <= 8) color = "#52b788";
+    else if (hours > 8) color = "#e63946";
+
+    grid.innerHTML += `
+      <div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">
+        ${d}
+      </div>`;
+  }
+}
+

@@ -208,3 +208,52 @@ nav a:hover {
   padding-left: 15px;
   list-style-type: disc;
 }
+
+#calendarHeatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 10px 0;
+  max-width: 350px;
+}
+
+.dayBox {
+  text-align: center;
+  padding: 6px;
+  font-size: 12px;
+  border-radius: 6px;
+  color: #222;
+  background: #eee;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.dayBox:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+}
+
+#calendarHeatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 10px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.dayBox {
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  color: #222;
+  background: #eee;
+  transition: transform 0.2s, background 0.3s;
+  cursor: default;
+}
+
+.dayBox:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
