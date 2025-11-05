@@ -193,13 +193,53 @@ if (document.getElementById('incomeFlowChart')) {
 /* ---------- PAGE: CONFLICTS ---------- */
 if (document.getElementById('conflictList')) {
   const list = document.getElementById('conflictList');
-  let out = [];
+  let conflicts = [];
+  let dayJobs = {}; // { date: [job1, job2] }
+
+  // 1. Detect overlapping shifts (true conflicts)
   for (let i = 0; i < shifts.length; i++) {
     for (let j = i + 1; j < shifts.length; j++) {
       if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
-        out.push(`⚠️ Clash on ${shifts[i].date} between ${shifts[i].job} and ${shifts[j].job}`);
+        conflicts.push(`⚠️ Clash on ${shifts[i].date} between ${shifts[i].job} (${shifts[i].start}-${shifts[i].end}) and ${shifts[j].job} (${shifts[j].start}-${shifts[j].end})`);
       }
     }
   }
-  list.innerHTML = out.length ? out.map(c => `<li>${c}</li>`).join('') : "<li>No conflicts ✅</li>";
+
+  // 2. Group jobs by date
+  shifts.forEach(s => {
+    if (!dayJobs[s.date]) dayJobs[s.date] = [];
+    dayJobs[s.date].push(s.job);
+  });
+
+  // 3. Build "block availability" recommendations
+  let blockMsgs = [];
+  for (const [date, jobs] of Object.entries(dayJobs)) {
+    // For each job on that date, suggest blocking all *other* workplaces
+    workplaces.forEach(place => {
+      if (!jobs.includes(place)) {
+        jobs.forEach(worked => {
+          blockMsgs.push(`📅 You are working at ${worked} on ${date} — block ${place} on this day.`);
+        });
+      }
+    });
+  }
+
+  // 4. Build output HTML
+  let html = '';
+
+  html += '<h3>Conflicting Shifts</h3>';
+  if (conflicts.length > 0) {
+    html += '<ul>' + conflicts.map(c => `<li>${c}</li>`).join('') + '</ul>';
+  } else {
+    html += '<p>No overlapping shifts ✅</p>';
+  }
+
+  html += '<h3>Block Availability</h3>';
+  if (blockMsgs.length > 0) {
+    html += '<ul>' + blockMsgs.map(b => `<li>${b}</li>`).join('') + '</ul>';
+  } else {
+    html += '<p>No shifts to block yet.</p>';
+  }
+
+  list.innerHTML = html;
 }
