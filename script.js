@@ -215,8 +215,71 @@ if (document.getElementById('dashboardSummary')) {
       options: { plugins: { legend: { position: 'right' } } }
     });
   }
+
 }
 
+/* ---------- PAGE: INCOME (Gradient Line Chart) ---------- */
+if (document.getElementById('incomeFlowChart')) {
+  window.addEventListener('DOMContentLoaded', () => {
+    if (shifts.length === 0) return;
+
+    const weekly = {};
+    shifts.forEach(s => {
+      const w = getWeek(s.date);
+      weekly[w] ??= { income: 0 };
+      weekly[w].income += s.income;
+    });
+
+    const weeks = Object.keys(weekly);
+    const incomeData = weeks.map(w => weekly[w].income);
+    const ctx = document.getElementById('incomeFlowChart').getContext('2d');
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(200,182,255,0.6)');
+    gradient.addColorStop(1, 'rgba(255,183,197,0.1)');
+
+    if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function')
+      window.incomeFlowChart.destroy();
+
+    window.incomeFlowChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: weeks,
+        datasets: [{
+          label: 'Weekly Income (AUD)',
+          data: incomeData,
+          borderColor: '#c8b6ff',
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#ffb7c5',
+          pointRadius: 6,
+          pointHoverRadius: 9
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1200, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#fff',
+            titleColor: '#111',
+            bodyColor: '#444',
+            borderColor: '#c8b6ff',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(220,220,220,0.1)' }, ticks: { color: '#666' } },
+          y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.15)' }, ticks: { color: '#444' } }
+        }
+      }
+    });
+  });
+}
 /* ---------- PAGE: CALENDAR LIST ---------- */
 if (document.getElementById('calendarContainer')) {
   const div = document.getElementById('calendarContainer');
@@ -373,3 +436,4 @@ if (document.getElementById('exportCalendarBtn')) {
     link.click();
   });
 }
+

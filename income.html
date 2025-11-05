@@ -5,24 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Income Flow</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
+
 <body>
   <header>
-    <h1>Income Flow</h1>
+    <img src="assets/rosterflow-logo.svg" alt="RosterFlow Logo">
     <nav>
-      <a href="index.html">Dashboard</a>
-      <a href="add.html">Add Shifts</a>
+      <a href="dashboard.html">Dashboard</a>
       <a href="calendar.html">Calendar</a>
+      <a href="income.html">Income</a>
       <a href="conflicts.html">Conflicts</a>
     </nav>
   </header>
 
   <main>
-    <h2>Weekly Income Trend</h2>
-    <canvas id="incomeFlowChart" height="150"></canvas>
+    <h1>Weekly Income Trend</h1>
+
+    <!-- ✅ This is what script.js expects -->
+    <section class="chart-section">
+      <canvas id="incomeFlowChart"></canvas>
+    </section>
   </main>
 
+  <!-- ✅ Your main app logic -->
   <script src="script.js"></script>
 </body>
 </html>

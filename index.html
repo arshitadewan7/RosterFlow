@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RosterFlow</title>
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 
   <style>
     body {
@@ -15,12 +14,16 @@
       font-family: "Poppins", sans-serif;
       transition: opacity 1s ease;
     }
-    body.fade-out { opacity: 0; }
+    body.fade-out {
+      opacity: 0;
+    }
 
-    #bg {
+    canvas#bg {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: 0;
     }
 
@@ -37,46 +40,47 @@
       animation: fadeIn 2s ease-out;
     }
 
-      .overlay img {
-    width: 380px;
-    height: auto;
-    animation: float 3s ease-in-out infinite alternate;
-    pointer-events: none;
-    filter: drop-shadow(0 0 25px rgba(200, 182, 255, 0.6))
-            drop-shadow(0 0 45px rgba(255, 183, 197, 0.4));
-    transition: transform 0.3s ease, filter 0.3s ease;
-  }
+    .overlay img {
+      width: 420px;
+      height: auto;
+      animation: float 3s ease-in-out infinite alternate;
+      pointer-events: none;
+      filter: drop-shadow(0 0 25px rgba(200, 182, 255, 0.6))
+              drop-shadow(0 0 45px rgba(255, 183, 197, 0.4));
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
 
-  .overlay img:hover {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 35px rgba(200, 182, 255, 0.8))
-            drop-shadow(0 0 55px rgba(255, 183, 197, 0.6));
-  }
-
+    .overlay img:hover {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 35px rgba(200, 182, 255, 0.8))
+              drop-shadow(0 0 55px rgba(255, 183, 197, 0.6));
+    }
 
     .overlay button {
       pointer-events: auto;
-      margin-top: 50px;
-      padding: 14px 40px;
+      margin-top: 60px;
+      padding: 16px 50px;
       border: none;
-      border-radius: 50px;
-      font-size: 1.1em;
-      font-weight: 500;
+      border-radius: 60px;
+      font-size: 1.2em;
+      font-weight: 600;
       background: linear-gradient(90deg, #ffb7c5, #c8b6ff, #a0e7e5);
-      color: #333;
+      color: #2a2a2a;
       cursor: pointer;
-      box-shadow: 0 0 25px rgba(255, 200, 230, 0.5);
+      box-shadow: 0 0 35px rgba(255, 200, 230, 0.5);
       transition: all 0.3s ease;
     }
+
     .overlay button:hover {
-      transform: scale(1.07);
-      box-shadow: 0 0 40px rgba(255, 170, 210, 0.8);
+      transform: scale(1.08);
+      box-shadow: 0 0 50px rgba(255, 170, 210, 0.8);
     }
 
     @keyframes float {
       from { transform: translateY(0px); }
       to { transform: translateY(-10px); }
     }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.97); }
       to { opacity: 1; transform: scale(1); }
@@ -146,6 +150,14 @@
     orb2.position.set(-3, -2, -1);
     scene.add(orb1, orb2);
 
+    // Parallax mouse motion
+    document.addEventListener("mousemove", (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * -2;
+      camera.position.x = x * 2;
+      camera.position.y = y * 1.5;
+    });
+
     // Animation
     let zooming = false;
     const animate = () => {
@@ -166,13 +178,12 @@
     });
 
     // === BUTTON CLICK (Guaranteed Working) ===
-    const btn = document.getElementById("getStarted");
-    btn.addEventListener("click", () => {
+    document.getElementById("getStarted").addEventListener("click", () => {
       zooming = true;
       document.body.classList.add("fade-out");
 
-      // ⚡ Make sure this matches your real dashboard file
-      const nextPage = "dashboard.html"; // change to "index.html" if needed
+      // ✅ Make sure this matches your actual dashboard page
+      const nextPage = "dashboard.html"; // or "index.html"
       setTimeout(() => (window.location.href = nextPage), 1200);
     });
   </script>
