@@ -128,42 +128,44 @@ if (document.getElementById('dashboardSummary')) {
     .join('');
   document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
 
-  /* ----- WORK RESTRICTION TRACKER ----- */
-  const restrictionDiv = document.createElement('div');
-  restrictionDiv.className = "restrictions";
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay());
-  const fortnightStart = new Date(weekStart);
-  fortnightStart.setDate(weekStart.getDate() - 7);
+  /* ----- WORK RESTRICTION TRACKER (FIXED) ----- */
+const restrictionDiv = document.getElementById('restrictionSection');
 
-  let weekHours = 0, fortnightHours = 0;
-  shifts.forEach(s => {
-    const shiftDate = new Date(s.date + "T00:00");
-    if (shiftDate >= weekStart) weekHours += s.hours;
-    if (shiftDate >= fortnightStart) fortnightHours += s.hours;
-  });
+// Ensure the section is empty before adding new data
+restrictionDiv.innerHTML = "";
 
-  const createProgressBar = (value, max, color) => {
-    const percent = Math.min((value / max) * 100, 100);
-    return `
-      <div style="background:#ddd;border-radius:10px;overflow:hidden;width:100%;height:16px;margin-top:4px;">
-        <div style="width:${percent}%;background:${color};height:100%;transition:width 0.3s;"></div>
-      </div>`;
-  };
+const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const weekStart = new Date(today);
+weekStart.setDate(today.getDate() - today.getDay());
+const fortnightStart = new Date(weekStart);
+fortnightStart.setDate(weekStart.getDate() - 7);
 
-  const weekColor = weekHours > 24 ? "red" : weekHours > 20 ? "orange" : "#28a745";
-  const fortnightColor = fortnightHours > 48 ? "red" : fortnightHours > 40 ? "orange" : "#28a745";
+let weekHours = 0, fortnightHours = 0;
+shifts.forEach(s => {
+  const shiftDate = new Date(s.date + "T00:00");
+  if (shiftDate >= weekStart) weekHours += s.hours;
+  if (shiftDate >= fortnightStart) fortnightHours += s.hours;
+});
 
-  restrictionDiv.innerHTML = `
-    <h3>Work Restrictions</h3>
-    <p><strong>This Week:</strong> ${weekHours.toFixed(1)} hrs / 24 hrs</p>
-    ${createProgressBar(weekHours, 24, weekColor)}
-    <p><strong>This Fortnight:</strong> ${fortnightHours.toFixed(1)} hrs / 48 hrs</p>
-    ${createProgressBar(fortnightHours, 48, fortnightColor)}
-  `;
-  document.getElementById('dashboard').appendChild(restrictionDiv);
+const createProgressBar = (value, max, color) => {
+  const percent = Math.min((value / max) * 100, 100);
+  return `
+    <div style="background:#ddd;border-radius:10px;overflow:hidden;width:100%;height:16px;margin-top:4px;">
+      <div style="width:${percent}%;background:${color};height:100%;transition:width 0.3s;"></div>
+    </div>`;
+};
+
+const weekColor = weekHours > 24 ? "red" : weekHours > 20 ? "orange" : "#28a745";
+const fortnightColor = fortnightHours > 48 ? "red" : fortnightHours > 40 ? "orange" : "#28a745";
+
+restrictionDiv.innerHTML = `
+  <p><strong>This Week:</strong> ${weekHours.toFixed(1)} hrs / 24 hrs</p>
+  ${createProgressBar(weekHours, 24, weekColor)}
+  <p><strong>This Fortnight:</strong> ${fortnightHours.toFixed(1)} hrs / 48 hrs</p>
+  ${createProgressBar(fortnightHours, 48, fortnightColor)}
+`;
+
 
   /* ----- VISUAL CHARTS ----- */
   if (shifts.length > 0) {
