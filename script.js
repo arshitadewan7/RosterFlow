@@ -464,3 +464,75 @@ function exportToICS() {
   link.click();
   document.body.removeChild(link);
 }
+
+/* =========================================
+   PAGE: INCOME
+   ========================================= */
+if (document.getElementById("incomeFlowChart")) {
+  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+
+  const incomeSummary = document.getElementById("incomeSummary");
+  const ctx = document.getElementById("incomeFlowChart");
+
+  if (shifts.length === 0) {
+    incomeSummary.innerHTML = `<p>No income data yet. Add your shifts first.</p>`;
+  } else {
+    /* ---------- 1️⃣ Group Income by Week ---------- */
+    const weeklyIncome = {};
+    shifts.forEach(s => {
+      const week = getWeek(s.date);
+      weeklyIncome[week] = (weeklyIncome[week] || 0) + s.income;
+    });
+
+    const weeks = Object.keys(weeklyIncome).sort((a, b) => new Date(a) - new Date(b));
+    const incomes = weeks.map(w => weeklyIncome[w]);
+
+    /* ---------- 2️⃣ Render Weekly Income Chart ---------- */
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: weeks,
+        datasets: [{
+          label: "Weekly Income (AUD)",
+          data: incomes,
+          borderColor: "#a78bfa",
+          backgroundColor: "rgba(200,182,255,0.25)",
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "#ffb7c5",
+          pointRadius: 5
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: "Weekly Income Trend",
+            color: "#333",
+            font: { family: "Outfit", size: 16, weight: "600" }
+          }
+        },
+        scales: {
+          x: { ticks: { color: "#444" }, grid: { display: false } },
+          y: { ticks: { color: "#444" }, beginAtZero: true }
+        }
+      }
+    });
+
+    /* ---------- 3️⃣ Calculate Monthly + Total Income ---------- */
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const monthlyIncome = shifts
+      .filter(s => new Date(s.date).getMonth() === thisMonth)
+      .reduce((sum, s) => sum + s.income, 0);
+
+    const totalIncome = shifts.reduce((sum, s) => sum + s.income, 0);
+
+    /* ---------- 4️⃣ Display Summary ---------- */
+    incomeSummary.innerHTML = `
+      <strong>This Month:</strong> $${monthlyIncome.toFixed(2)}<br>
+      <strong>Total Overall:</strong> $${totalIncome.toFixed(2)}
+    `;
+  }
+}
