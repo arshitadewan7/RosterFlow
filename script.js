@@ -174,10 +174,22 @@ async function reloadShiftTable() {
 
 // Delete shift
 async function deleteShift(id) {
+  if (!id) {
+    alert("Missing shift ID.");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to delete this shift?")) return;
+
   const { error } = await supabase.from("shifts").delete().eq("id", id);
-  if (error) alert("Error deleting shift: " + error.message);
-  else reloadShiftTable();
+  if (error) {
+    alert("Error deleting shift: " + error.message);
+  } else {
+    alert("Shift deleted!");
+    await reloadShiftTable(); // ✅ Wait for table to refresh
+  }
 }
+
 
 /* =========================================
    PAGE: DASHBOARD

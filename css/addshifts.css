@@ -233,21 +233,57 @@ body {
   border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-/* ---------- Responsive Behavior ---------- */
+/* ---------- Table Container ---------- */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: block;
+}
+
+/* ---------- Table Styling ---------- */
+#shiftsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 100%; /* ✅ Allow the table to adapt instead of forcing 650px */
+  table-layout: auto; /* ✅ Let cells size naturally */
+}
+
+#shiftsTable th,
+#shiftsTable td {
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+#shiftsTable th {
+  background: #f3e8ff;
+  color: #3b0764;
+  font-weight: 600;
+}
+
+/* ---------- Mobile ---------- */
 @media (max-width: 700px) {
   .table-container {
     border-radius: 10px;
     background: rgba(255,255,255,0.7);
+    overflow-x: scroll;
   }
 
   #shiftsTable {
-    min-width: 550px;
+    font-size: 0.85rem;
+    width: 100%;
+    min-width: 100%;
+    white-space: nowrap;
   }
 
   #shiftsTable th,
   #shiftsTable td {
     padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
   }
 
   #shiftsTable button {
@@ -257,6 +293,7 @@ body {
   }
 }
 
+/* ---------- Scrollbar Styling ---------- */
 .table-container::-webkit-scrollbar {
   height: 6px;
 }
