@@ -3,32 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Income Flow</title>
-  <link rel="stylesheet" href="style.css">
+  <title>RosterFlow — Income</title>
+
+  <!-- Fonts & Styles -->
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/income.css">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
   <header>
-    <img src="assets/rosterflow-logo.svg" alt="RosterFlow Logo">
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="calendar.html">Calendar</a>
-      <a href="income.html">Income</a>
-      <a href="conflicts.html">Conflicts</a>
-    </nav>
-  </header>
+  <div class="logo">
+    <h1>RosterFlow</h1>
+  </div>
 
-  <main>
-    <h1>Weekly Income Trend</h1>
+  <nav id="navMenu">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="add.html">Add Shifts</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="income.html">Income</a>
+    <a href="conflicts.html">Conflicts</a>
+  </nav>
 
-    <!-- ✅ This is what script.js expects -->
-    <section class="chart-section">
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- ✅ Overlay (must be inside body but outside header layout flow) -->
+  <div id="menuOverlay"></div>
+</header>
+
+  <main class="income-container">
+    <section class="income-card">
+      <h2>Weekly Income Trend</h2>
+      <p class="subtitle">Track how your income fluctuates week by week.</p>
       <canvas id="incomeFlowChart"></canvas>
+    </section>
+
+    <section class="income-card summary">
+      <h2>Income Summary</h2>
+      <p id="incomeSummary">Your total income this month and overall summary will appear here.</p>
     </section>
   </main>
 
-  <!-- ✅ Your main app logic -->
+  <!-- Main app logic -->
   <script src="script.js"></script>
+
+  <!-- Active page highlight -->
+  <script>
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('nav a').forEach(link => {
+      if (link.getAttribute('href') === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  </script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  // ✅ Open & close menu on hamburger click
+  hamburger.addEventListener("click", () => {
+    const isActive = hamburger.classList.toggle("active");
+    navMenu.classList.toggle("active", isActive);
+    overlay.classList.toggle("active", isActive);
+    document.body.classList.toggle("menu-open", isActive); // prevent scroll
+  });
+
+  // ✅ Close menu when overlay is clicked
+  overlay.addEventListener("click", () => {
+    closeMenu();
+  });
+
+  // ✅ Close menu when any link is clicked
+  document.querySelectorAll("#navMenu a").forEach(link => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  // ✅ Helper: close all active states
+  function closeMenu() {
+    hamburger.classList.remove("active");
+    navMenu.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.classList.remove("menu-open");
+  }
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,239 @@
+/* =========================================
+   RosterFlow — Unified Header with Hamburger Menu
+   ========================================= */
+
+/* --- FONT & VARIABLES --- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --lavender: #c8b6ff;
+  --blush: #ffb7c5;
+  --mint: #a0e7e5;
+  --white-glass: rgba(255, 255, 255, 0.6);
+  --shadow: rgba(200, 182, 255, 0.25);
+}
+
+/* --- HEADER --- */
+header {
+  background: var(--white-glass);
+  backdrop-filter: none; /* ❌ No blur */
+  box-shadow: 0 10px 40px var(--shadow);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 0 30px 30px;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+}
+
+/* --- LOGO --- */
+.logo h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2d2d2d;
+  letter-spacing: 0.4px;
+  margin: 0;
+  line-height: 1;
+}
+
+/* --- NAVIGATION (Desktop) --- */
+nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+nav a {
+  color: #222;
+  text-decoration: none;
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.3px;
+  padding-bottom: 3px;
+  position: relative;
+  transition: color 0.3s, transform 0.2s ease;
+}
+
+/* --- Hover underline effect --- */
+nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--lavender), var(--blush));
+  transition: width 0.3s ease;
+}
+
+nav a:hover::after,
+nav a.active::after {
+  width: 100%;
+}
+
+nav a:hover,
+nav a.active {
+  color: var(--lavender);
+}
+
+/* --- HAMBURGER (hidden on desktop) --- */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1300;
+}
+
+.hamburger span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: #333;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}
+
+/* --- Hamburger active animation --- */
+.hamburger.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* --- OVERLAY (No Blur, just dim) --- */
+#menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: none !important; /* ✅ No blur ever */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1200;
+}
+
+#menuOverlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+/* --- Prevent body scroll when menu is open --- */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* =========================================
+   MOBILE STYLES
+   ========================================= */
+@media (max-width: 768px) {
+
+  /* --- HEADER --- */
+  header {
+    padding: 1rem 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 20px 20px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: none;
+    box-shadow: 0 8px 25px rgba(200, 182, 255, 0.2);
+    z-index: 1100;
+  }
+
+  body {
+    padding-top: 80px;
+  }
+
+  /* --- MOBILE NAVIGATION --- */
+  nav {
+    position: fixed;
+    top: 0;
+    right: -100%; /* ✅ hidden by default */
+    height: 100vh;
+    width: 75%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.2rem;
+    background: linear-gradient(
+      180deg,
+      rgba(200, 182, 255, 0.95) 0%,
+      rgba(255, 183, 197, 0.9) 50%,
+      rgba(160, 231, 229, 0.9) 100%
+    );
+    backdrop-filter: none;
+    box-shadow: -10px 0 40px rgba(200, 182, 255, 0.25);
+    border-radius: 25px 0 0 25px;
+    transition: right 0.4s ease-in-out;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  nav.active {
+    right: 0 !important;
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* --- HAMBURGER --- */
+  .hamburger {
+    display: flex;
+    position: absolute;
+    top: 22px;
+    right: 24px;
+  }
+
+  .logo h1 {
+    font-size: 1.6rem;
+  }
+
+  nav a {
+    font-size: 1.2rem;
+  }
+}
+
+/* --- SMALLER SCREENS --- */
+@media (max-width: 480px) {
+  nav {
+    width: 80%;
+  }
+
+  .logo h1 {
+    font-size: 1.4rem;
+  }
+
+  nav a {
+    font-size: 1rem;
+  }
+}
+
+/* --- FINAL SAFEGUARD (keeps layering perfect) --- */
+@media (max-width: 768px) {
+  #menuOverlay {
+    z-index: 1200 !important;
+  }
+  .hamburger {
+    z-index: 1300 !important;
+  }
+  nav {
+    z-index: 1250 !important;
+  }
+}

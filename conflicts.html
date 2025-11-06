@@ -3,25 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conflicts & Availability</title>
-  <link rel="stylesheet" href="style.css">
+  <title>RosterFlow — Conflicts & Availability</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/conflicts.css">
+  
 </head>
+
 <body>
   <header>
-    <h1>Conflicts & Availability</h1>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="add.html">Add Shifts</a>
-      <a href="calendar.html">Calendar</a>
-      <a href="income.html">Income</a>
-    </nav>
-  </header>
+  <div class="logo">
+    <h1>RosterFlow</h1>
+  </div>
 
-  <main>
-    <h2>Detected Clashes</h2>
-    <ul id="conflictList"></ul>
-  </main>
+  <nav id="navMenu">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="add.html">Add Shifts</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="income.html">Income</a>
+    <a href="conflicts.html">Conflicts</a>
+  </nav>
 
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- ✅ Overlay (must be inside body but outside header layout flow) -->
+  <div id="menuOverlay"></div>
+</header>
+
+  <main class="conflicts-container">
+    <section class="conflicts-card">
+      <h2>Detected Shift Conflicts</h2>
+      <p class="subtitle">
+        Any overlapping or double-booked shifts will be displayed below.
+      </p>
+      <ul id="conflictList"></ul>
+    </section>
+
+    
+
+  <!-- Script -->
   <script src="script.js"></script>
+
+  <!-- Active nav highlight -->
+  <script>
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('nav a').forEach(link => {
+      if (link.getAttribute('href') === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  </script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  // ✅ Open & close menu on hamburger click
+  hamburger.addEventListener("click", () => {
+    const isActive = hamburger.classList.toggle("active");
+    navMenu.classList.toggle("active", isActive);
+    overlay.classList.toggle("active", isActive);
+    document.body.classList.toggle("menu-open", isActive); // prevent scroll
+  });
+
+  // ✅ Close menu when overlay is clicked
+  overlay.addEventListener("click", () => {
+    closeMenu();
+  });
+
+  // ✅ Close menu when any link is clicked
+  document.querySelectorAll("#navMenu a").forEach(link => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  // ✅ Helper: close all active states
+  function closeMenu() {
+    hamburger.classList.remove("active");
+    navMenu.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.classList.remove("menu-open");
+  }
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,250 @@
+/* =============================
+   RosterFlow Responsive Styles
+   ============================= */
+
+/* GENERAL RESET */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* GLOBAL ADJUSTMENTS */
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  word-wrap: break-word;
+}
+
+/* =============================
+   TABLET LAYOUT (≤ 1024px)
+   ============================= */
+@media (max-width: 1024px) {
+  header {
+    flex-direction: column;
+    gap: 0.8rem;
+    height: auto;
+    padding: 1.2rem 1.5rem;
+  }
+
+  nav {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  nav a {
+    font-size: 0.95rem;
+    padding: 6px 10px;
+  }
+
+  .dashboard-container {
+    max-width: 90%;
+    padding: 1.5rem;
+    gap: 2rem;
+  }
+
+  .dashboard-card {
+    padding: 1.5rem 1.8rem;
+  }
+
+  .chart-section canvas {
+    max-height: 300px;
+  }
+
+  .form-card,
+  .table-section {
+    padding: 1.8rem;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* =============================
+   MOBILE LAYOUT (≤ 768px)
+   ============================= */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 0 0 20px 20px;
+  }
+
+  header img {
+    height: 52px;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  nav a {
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 6px 10px;
+  }
+
+  .dashboard-container {
+    padding: 1rem;
+    gap: 1.2rem;
+  }
+
+  .dashboard-card {
+    padding: 1.3rem 1.5rem;
+    border-radius: 18px;
+  }
+
+  .dashboard-summary {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .chart-section h2, .chart-section h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  canvas {
+    max-height: 250px;
+  }
+
+  /* Forms */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .inline-form {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  input, select, button {
+    width: 100%;
+  }
+
+  /* Tables */
+  .table-section table,
+  .table-section th,
+  .table-section td {
+    font-size: 0.85rem;
+  }
+
+  .table-section th,
+  .table-section td {
+    padding: 10px;
+  }
+
+  /* Calendar Grid */
+  #calendarHeatmapGrid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  #calendarHeatmapGrid div {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+  }
+
+  /* Buttons */
+  button,
+  .export-btn,
+  .btn-gradient,
+  .btn-gradient-wide {
+    font-size: 0.9rem;
+    padding: 10px 18px;
+  }
+}
+
+/* =============================
+   SMALL PHONES (≤ 480px)
+   ============================= */
+@media (max-width: 480px) {
+  header {
+    padding: 0.8rem 1rem;
+  }
+
+  header img {
+    height: 45px;
+  }
+
+  nav a {
+    font-size: 0.85rem;
+  }
+
+  .dashboard-container {
+    max-width: 95%;
+    padding: 0.8rem;
+  }
+
+  .dashboard-card {
+    padding: 1rem 1.2rem;
+  }
+
+  h1, h2 {
+    font-size: 1rem;
+  }
+
+  p, span, label {
+    font-size: 0.85rem;
+  }
+
+  .chart-section canvas {
+    max-height: 220px;
+  }
+
+  #calendarHeatmapGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  #calendarHeatmapGrid div {
+    width: 16px;
+    height: 16px;
+  }
+
+  footer {
+    font-size: 0.8rem;
+    padding-bottom: 1.2rem;
+  }
+}
+
+/* =============================
+   ULTRA-SMALL DEVICES (≤ 360px)
+   ============================= */
+@media (max-width: 360px) {
+  nav a {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  button {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+  }
+
+  .dashboard-card h2 {
+    font-size: 0.95rem;
+  }
+
+  .chart-section {
+    padding: 1rem;
+  }
+
+  .dashboard-summary {
+    font-size: 0.85rem;
+  }
+}

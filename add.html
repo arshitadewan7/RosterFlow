@@ -5,19 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add Workplaces & Shifts | RosterFlow</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/header.css" />
+  <link rel="stylesheet" href="css/addshifts.css" />
 </head>
 
 <body class="gradient-bg">
-  <header class="navbar">
-    <h1 class="logo">RosterFlow</h1>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="calendar.html">Calendar</a>
-      <a href="income.html">Income</a>
-      <a href="conflicts.html">Conflicts</a>
-    </nav>
-  </header>
+  <header>
+  <div class="logo">
+    <h1>RosterFlow</h1>
+  </div>
+
+  <nav id="navMenu">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="add.html">Add Shifts</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="income.html">Income</a>
+    <a href="conflicts.html">Conflicts</a>
+  </nav>
+
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- ✅ Overlay (must be inside body but outside header layout flow) -->
+  <div id="menuOverlay"></div>
+</header>
 
   <main class="form-container">
     <section class="form-card">
@@ -67,6 +81,40 @@
       </table>
     </section>
   </main>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  // ✅ Open & close menu on hamburger click
+  hamburger.addEventListener("click", () => {
+    const isActive = hamburger.classList.toggle("active");
+    navMenu.classList.toggle("active", isActive);
+    overlay.classList.toggle("active", isActive);
+    document.body.classList.toggle("menu-open", isActive); // prevent scroll
+  });
+
+  // ✅ Close menu when overlay is clicked
+  overlay.addEventListener("click", () => {
+    closeMenu();
+  });
+
+  // ✅ Close menu when any link is clicked
+  document.querySelectorAll("#navMenu a").forEach(link => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  // ✅ Helper: close all active states
+  function closeMenu() {
+    hamburger.classList.remove("active");
+    navMenu.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.classList.remove("menu-open");
+  }
+});
+</script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>

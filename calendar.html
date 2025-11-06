@@ -3,43 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendar View</title>
-  <link rel="stylesheet" href="style.css">
+  <title>RosterFlow — Calendar</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/calendar.css">
+  
 </head>
+
 <body>
   <header>
-    <h1>Work Calendar</h1>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="add.html">Add Shifts</a>
-      <a href="income.html">Income</a>
-      <a href="conflicts.html">Conflicts</a>
-    </nav>
-  </header>
+  <div class="logo">
+    <h1>RosterFlow</h1>
+  </div>
 
-  <main>
+  <nav id="navMenu">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="add.html">Add Shifts</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="income.html">Income</a>
+    <a href="conflicts.html">Conflicts</a>
+  </nav>
+
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- ✅ Overlay (must be inside body but outside header layout flow) -->
+  <div id="menuOverlay"></div>
+</header>
+
+  <main class="calendar-container">
     <!-- 🔹 Heatmap Overview -->
-    <section>
+    <section class="calendar-card">
       <h2>Calendar Heatmap View</h2>
-      <p style="color:#555;margin-bottom:1em;">
-        Darker green = more hours worked that day. Red = overtime (>8 hrs).
+      <p class="subtitle">
+        Darker green = more hours worked that day. Red = overtime (&gt;8 hrs).
       </p>
       <div id="calendarHeatmapGrid"></div>
     </section>
 
-    <hr style="margin:2em 0; border:0; border-top:1px solid #ddd;">
-
     <!-- 🔹 Detailed List -->
-    <section>
+    <section class="calendar-card">
       <h2>Detailed Calendar View</h2>
-      <p style="color:#555;">All your shifts grouped by date:</p>
+      <p class="subtitle">All your shifts grouped by date:</p>
       <div id="calendarContainer"></div>
     </section>
+
+    <!-- 🔹 Export Button -->
+    <div class="export-container">
+      <button id="exportCalendarBtn" class="export-btn">📅 Export to Calendar (.ics)</button>
+    </div>
   </main>
 
-  <button id="exportCalendarBtn" class="export-btn">📅 Export to Calendar (.ics)</button>
-
-
+  <!-- Scripts -->
   <script src="script.js"></script>
+
+  <!-- Active nav highlight -->
+  <script>
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('nav a').forEach(link => {
+      if (link.getAttribute('href') === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  </script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  // ✅ Open & close menu on hamburger click
+  hamburger.addEventListener("click", () => {
+    const isActive = hamburger.classList.toggle("active");
+    navMenu.classList.toggle("active", isActive);
+    overlay.classList.toggle("active", isActive);
+    document.body.classList.toggle("menu-open", isActive); // prevent scroll
+  });
+
+  // ✅ Close menu when overlay is clicked
+  overlay.addEventListener("click", () => {
+    closeMenu();
+  });
+
+  // ✅ Close menu when any link is clicked
+  document.querySelectorAll("#navMenu a").forEach(link => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  // ✅ Helper: close all active states
+  function closeMenu() {
+    hamburger.classList.remove("active");
+    navMenu.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.classList.remove("menu-open");
+  }
+});
+</script>
 </body>
 </html>

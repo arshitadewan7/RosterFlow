@@ -166,28 +166,87 @@ if (document.getElementById('dashboardSummary')) {
   document.getElementById('dashboard').appendChild(restrictionDiv);
 
   /* ----- VISUAL CHARTS ----- */
-  if (Object.keys(weekly).length > 0) {
+  if (shifts.length > 0) {
     const ctx1 = document.getElementById('hoursChart');
     const ctx2 = document.getElementById('incomeChart');
-    const weeks = Object.keys(weekly);
-    const hrs = weeks.map(w => weekly[w].total);
-    const inc = weeks.map(w => weekly[w].income);
+
+    // -------- FIXED: Hours by Workplace --------
+    const hoursByWorkplace = {};
+    shifts.forEach(shift => {
+      const job = shift.job || "Other";
+      hoursByWorkplace[job] = (hoursByWorkplace[job] || 0) + shift.hours;
+    });
+
+    const jobNames = Object.keys(hoursByWorkplace);
+    const jobHours = Object.values(hoursByWorkplace);
 
     if (window.hoursChart && typeof window.hoursChart.destroy === 'function') window.hoursChart.destroy();
-    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
-
     window.hoursChart = new Chart(ctx1, {
       type: 'bar',
-      data: { labels: weeks, datasets: [{ label: 'Hours', data: hrs, backgroundColor: '#007bff' }] },
-      options: { plugins: { legend: { position: 'bottom' } } }
+      data: {
+        labels: jobNames,
+        datasets: [{
+          label: 'Hours by Workplace',
+          data: jobHours,
+          backgroundColor: ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Work Hours by Workplace',
+            font: { family: 'Outfit', size: 18, weight: 600 },
+            color: '#2d2d2d'
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#333', font: { family: 'Poppins' } },
+            grid: { display: false }
+          },
+          y: {
+            ticks: { color: '#333', font: { family: 'Poppins' } },
+            grid: { color: 'rgba(200,200,200,0.1)' },
+            beginAtZero: true
+          }
+        }
+      }
     });
 
+    // -------- Weekly Income Chart --------
+    const weekly = {};
+    shifts.forEach(s => {
+      const w = getWeek(s.date);
+      weekly[w] ??= { income: 0 };
+      weekly[w].income += s.income;
+    });
+
+    const weeks = Object.keys(weekly);
+    const inc = weeks.map(w => weekly[w].income);
+
+    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
     window.incomeChart = new Chart(ctx2, {
       type: 'line',
-      data: { labels: weeks, datasets: [{ label: 'Income (AUD)', data: inc, borderColor: '#28a745', fill: false }] },
+      data: {
+        labels: weeks,
+        datasets: [{
+          label: 'Weekly Income (AUD)',
+          data: inc,
+          borderColor: '#a78bfa',
+          backgroundColor: 'rgba(200,182,255,0.2)',
+          tension: 0.4,
+          pointBackgroundColor: '#ffb7c5',
+          pointRadius: 5,
+          fill: true
+        }]
+      },
       options: { plugins: { legend: { position: 'bottom' } } }
     });
 
+    // -------- Donut Charts --------
     const jobTotals = {};
     shifts.forEach(s => {
       jobTotals[s.job] ??= { hours: 0, income: 0 };
@@ -195,10 +254,8 @@ if (document.getElementById('dashboardSummary')) {
       jobTotals[s.job].income += s.income;
     });
 
-    const jobNames = Object.keys(jobTotals);
-    const jobHours = jobNames.map(j => jobTotals[j].hours);
-    const jobIncomes = jobNames.map(j => jobTotals[j].income);
-    const colors = ['#007bff', '#28a745', '#ff9800', '#8e44ad', '#e91e63'];
+    const jobIncomes = Object.keys(jobTotals).map(j => jobTotals[j].income);
+    const colors = ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'];
 
     if (window.hoursDonutChart && typeof window.hoursDonutChart.destroy === 'function') window.hoursDonutChart.destroy();
     if (window.incomeDonutChart && typeof window.incomeDonutChart.destroy === 'function') window.incomeDonutChart.destroy();
@@ -215,225 +272,7 @@ if (document.getElementById('dashboardSummary')) {
       options: { plugins: { legend: { position: 'right' } } }
     });
   }
-
 }
 
-/* ---------- PAGE: INCOME (Gradient Line Chart) ---------- */
-if (document.getElementById('incomeFlowChart')) {
-  window.addEventListener('DOMContentLoaded', () => {
-    if (shifts.length === 0) return;
 
-    const weekly = {};
-    shifts.forEach(s => {
-      const w = getWeek(s.date);
-      weekly[w] ??= { income: 0 };
-      weekly[w].income += s.income;
-    });
-
-    const weeks = Object.keys(weekly);
-    const incomeData = weeks.map(w => weekly[w].income);
-    const ctx = document.getElementById('incomeFlowChart').getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(200,182,255,0.6)');
-    gradient.addColorStop(1, 'rgba(255,183,197,0.1)');
-
-    if (window.incomeFlowChart && typeof window.incomeFlowChart.destroy === 'function')
-      window.incomeFlowChart.destroy();
-
-    window.incomeFlowChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: weeks,
-        datasets: [{
-          label: 'Weekly Income (AUD)',
-          data: incomeData,
-          borderColor: '#c8b6ff',
-          backgroundColor: gradient,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: '#ffb7c5',
-          pointRadius: 6,
-          pointHoverRadius: 9
-        }]
-      },
-      options: {
-        responsive: true,
-        animation: { duration: 1200, easing: 'easeOutQuart' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#fff',
-            titleColor: '#111',
-            bodyColor: '#444',
-            borderColor: '#c8b6ff',
-            borderWidth: 1,
-            padding: 12,
-            displayColors: false
-          }
-        },
-        scales: {
-          x: { grid: { color: 'rgba(220,220,220,0.1)' }, ticks: { color: '#666' } },
-          y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.15)' }, ticks: { color: '#444' } }
-        }
-      }
-    });
-  });
-}
-/* ---------- PAGE: CALENDAR LIST ---------- */
-if (document.getElementById('calendarContainer')) {
-  const div = document.getElementById('calendarContainer');
-  const grouped = {};
-  shifts.forEach(s => { (grouped[s.date] ??= []).push(s); });
-  const sortedDates = Object.keys(grouped).sort();
-  div.innerHTML = sortedDates.map(d => `
-    <div class="day">
-      <strong>${d}</strong>
-      <ul>${grouped[d].map(s =>
-        `<li>${s.job} (${s.start}-${s.end}) - ${s.hours.toFixed(1)}h${s.notes ? ` — <em>${s.notes}</em>` : ''}</li>`
-      ).join('')}</ul>
-    </div>`).join('');
-}
-
-/* ---------- PAGE: CALENDAR HEATMAP ---------- */
-if (document.getElementById('calendarHeatmapGrid')) {
-  const grid = document.getElementById('calendarHeatmapGrid');
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
-  const daysInMonth = last.getDate();
-
-  const hoursPerDay = {};
-  shifts.forEach(s => {
-    const d = new Date(s.date);
-    if (d.getMonth() === month && d.getFullYear() === year) {
-      hoursPerDay[s.date] = (hoursPerDay[s.date] || 0) + s.hours;
-    }
-  });
-
-  grid.innerHTML = "";
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const hours = hoursPerDay[dateStr] || 0;
-    let color = "#eee";
-    if (hours > 0 && hours <= 4) color = "#b7e4c7";
-    else if (hours <= 8) color = "#52b788";
-    else if (hours > 8) color = "#e63946";
-    grid.innerHTML += `<div class="dayBox" title="${dateStr}: ${hours.toFixed(1)} hrs" style="background:${color}">${d}</div>`;
-  }
-}
-
-/* ---------- PAGE: CONFLICTS (Enhanced Visual View) ---------- */
-if (document.getElementById('conflictList')) {
-  const list = document.getElementById('conflictList');
-  let conflicts = [];
-  let dayJobs = {};
-
-  // Detect overlapping shifts
-  for (let i = 0; i < shifts.length; i++) {
-    for (let j = i + 1; j < shifts.length; j++) {
-      if (shifts[i].date === shifts[j].date && checkOverlap(shifts[i], shifts[j])) {
-        conflicts.push({
-          date: shifts[i].date,
-          a: shifts[i],
-          b: shifts[j]
-        });
-      }
-    }
-  }
-
-  // Group jobs by date for block-availability
-  shifts.forEach(s => {
-    if (!dayJobs[s.date]) dayJobs[s.date] = [];
-    dayJobs[s.date].push(s.job);
-  });
-
-  let blockMsgs = [];
-  for (const [date, jobs] of Object.entries(dayJobs)) {
-    workplaces.forEach(place => {
-      if (!jobs.includes(place)) {
-        jobs.forEach(worked => {
-          blockMsgs.push(`📅 You are working at ${worked} on ${date} — block ${place} on this day.`);
-        });
-      }
-    });
-  }
-
-  // Build HTML output
-  let html = '<h3>Conflicting Shifts</h3>';
-  if (conflicts.length > 0) {
-    conflicts.forEach(c => {
-      html += `
-        <div class="conflict-card">
-          <p class="conflict-date">⚠️ ${c.date}</p>
-          <div class="conflict-pair">
-            <div class="shift-box">
-              <h4>${c.a.job}</h4>
-              <p>${c.a.start} – ${c.a.end}</p>
-              <p>${c.a.hours.toFixed(1)} h  |  $${c.a.income.toFixed(2)}</p>
-              ${c.a.notes ? `<p><em>${c.a.notes}</em></p>` : ''}
-            </div>
-            <div class="shift-box">
-              <h4>${c.b.job}</h4>
-              <p>${c.b.start} – ${c.b.end}</p>
-              <p>${c.b.hours.toFixed(1)} h  |  $${c.b.income.toFixed(2)}</p>
-              ${c.b.notes ? `<p><em>${c.b.notes}</em></p>` : ''}
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  } else {
-    html += '<p>No overlapping shifts ✅</p>';
-  }
-
-  html += '<h3>Block Availability</h3>';
-  html += blockMsgs.length
-    ? `<ul>${blockMsgs.map(b => `<li>${b}</li>`).join('')}</ul>`
-    : '<p>No shifts to block yet.</p>';
-
-  list.innerHTML = html;
-}
-
-/* ---------- EXPORT TO CALENDAR (.ICS) ---------- */
-if (document.getElementById('exportCalendarBtn')) {
-  document.getElementById('exportCalendarBtn').addEventListener('click', () => {
-    if (shifts.length === 0) {
-      alert("No shifts to export!");
-      return;
-    }
-
-    let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//RosterFlow//EN\n";
-
-    shifts.forEach(s => {
-      const start = new Date(`${s.date}T${s.start}`);
-      const end = new Date(`${s.date}T${s.end}`);
-      const uid = `${s.job}-${s.date}-${s.start}`;
-      const summary = `Work at ${s.job}`;
-      const desc = `Shift at ${s.job}\nTime: ${s.start} - ${s.end}\nExpected Income: $${s.income.toFixed(2)}${s.notes ? `\nNotes: ${s.notes}` : ''}`;
-      const dtStart = start.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
-      const dtEnd = end.toISOString().replace(/[-:]/g, '').split('.')[0] + "Z";
-
-      ics += [
-        "BEGIN:VEVENT",
-        `UID:${uid}`,
-        `SUMMARY:${summary}`,
-        `DESCRIPTION:${desc}`,
-        `DTSTART:${dtStart}`,
-        `DTEND:${dtEnd}`,
-        "END:VEVENT\n"
-      ].join("\n");
-    });
-
-    ics += "END:VCALENDAR";
-
-    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = "RosterFlow_Shifts.ics";
-    link.click();
-  });
-}
 
