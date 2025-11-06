@@ -1,3 +1,7 @@
+/* =========================================
+   RosterFlow — Unified Script (Add + Dashboard + Calendar)
+   ========================================= */
+
 /* ---------- LOCAL STORAGE SETUP ---------- */
 let shifts = JSON.parse(localStorage.getItem('shifts')) || [];
 let workplaces = JSON.parse(localStorage.getItem('workplaces')) || [];
@@ -24,7 +28,9 @@ function checkOverlap(a, b) {
   return a1 < b2 && b1 < a2;
 }
 
-/* ---------- PAGE: ADD SHIFTS ---------- */
+/* =========================================
+   PAGE: ADD SHIFTS
+   ========================================= */
 if (document.getElementById('shiftForm')) {
   const jobSelect = document.getElementById('job');
 
@@ -89,20 +95,22 @@ if (document.getElementById('shiftForm')) {
 
   // Display all shifts
   const tbody = document.querySelector('#shiftsTable tbody');
-  shifts.forEach((s, i) => {
-    const r = document.createElement('tr');
-    r.innerHTML = `
-      <td>${s.job}</td>
-      <td>${s.date}</td>
-      <td>${s.start}</td>
-      <td>${s.end}</td>
-      <td>${s.hours.toFixed(2)}</td>
-      <td>$${s.income.toFixed(2)}</td>
-      <td>${s.notes ? s.notes : '-'}</td>
-      <td><button onclick="deleteShift(${i})" style="background:red">Delete</button></td>
-    `;
-    tbody.appendChild(r);
-  });
+  if (tbody) {
+    shifts.forEach((s, i) => {
+      const r = document.createElement('tr');
+      r.innerHTML = `
+        <td>${s.job}</td>
+        <td>${s.date}</td>
+        <td>${s.start}</td>
+        <td>${s.end}</td>
+        <td>${s.hours.toFixed(2)}</td>
+        <td>$${s.income.toFixed(2)}</td>
+        <td>${s.notes ? s.notes : '-'}</td>
+        <td><button onclick="deleteShift(${i})" style="background:red">Delete</button></td>
+      `;
+      tbody.appendChild(r);
+    });
+  }
 }
 
 // Delete shift
@@ -112,7 +120,9 @@ function deleteShift(i) {
   location.reload();
 }
 
-/* ---------- PAGE: DASHBOARD ---------- */
+/* =========================================
+   PAGE: DASHBOARD
+   ========================================= */
 if (document.getElementById('dashboardSummary')) {
   const weekly = {};
   shifts.forEach(s => {
@@ -128,51 +138,48 @@ if (document.getElementById('dashboardSummary')) {
     .join('');
   document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
 
-  /* ----- WORK RESTRICTION TRACKER (FIXED) ----- */
-const restrictionDiv = document.getElementById('restrictionSection');
+  /* ---------- WORK RESTRICTION TRACKER ---------- */
+  const restrictionDiv = document.getElementById('restrictionSection');
+  restrictionDiv.innerHTML = "";
 
-// Ensure the section is empty before adding new data
-restrictionDiv.innerHTML = "";
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay());
+  const fortnightStart = new Date(weekStart);
+  fortnightStart.setDate(weekStart.getDate() - 7);
 
-const now = new Date();
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-const weekStart = new Date(today);
-weekStart.setDate(today.getDate() - today.getDay());
-const fortnightStart = new Date(weekStart);
-fortnightStart.setDate(weekStart.getDate() - 7);
+  let weekHours = 0, fortnightHours = 0;
+  shifts.forEach(s => {
+    const shiftDate = new Date(s.date + "T00:00");
+    if (shiftDate >= weekStart) weekHours += s.hours;
+    if (shiftDate >= fortnightStart) fortnightHours += s.hours;
+  });
 
-let weekHours = 0, fortnightHours = 0;
-shifts.forEach(s => {
-  const shiftDate = new Date(s.date + "T00:00");
-  if (shiftDate >= weekStart) weekHours += s.hours;
-  if (shiftDate >= fortnightStart) fortnightHours += s.hours;
-});
+  const createProgressBar = (value, max, color) => {
+    const percent = Math.min((value / max) * 100, 100);
+    return `
+      <div style="background:#ddd;border-radius:10px;overflow:hidden;width:100%;height:16px;margin-top:4px;">
+        <div style="width:${percent}%;background:${color};height:100%;transition:width 0.3s;"></div>
+      </div>`;
+  };
 
-const createProgressBar = (value, max, color) => {
-  const percent = Math.min((value / max) * 100, 100);
-  return `
-    <div style="background:#ddd;border-radius:10px;overflow:hidden;width:100%;height:16px;margin-top:4px;">
-      <div style="width:${percent}%;background:${color};height:100%;transition:width 0.3s;"></div>
-    </div>`;
-};
+  const weekColor = weekHours > 24 ? "red" : weekHours > 20 ? "orange" : "#28a745";
+  const fortnightColor = fortnightHours > 48 ? "red" : fortnightHours > 40 ? "orange" : "#28a745";
 
-const weekColor = weekHours > 24 ? "red" : weekHours > 20 ? "orange" : "#28a745";
-const fortnightColor = fortnightHours > 48 ? "red" : fortnightHours > 40 ? "orange" : "#28a745";
+  restrictionDiv.innerHTML = `
+    <p><strong>This Week:</strong> ${weekHours.toFixed(1)} hrs / 24 hrs</p>
+    ${createProgressBar(weekHours, 24, weekColor)}
+    <p><strong>This Fortnight:</strong> ${fortnightHours.toFixed(1)} hrs / 48 hrs</p>
+    ${createProgressBar(fortnightHours, 48, fortnightColor)}
+  `;
 
-restrictionDiv.innerHTML = `
-  <p><strong>This Week:</strong> ${weekHours.toFixed(1)} hrs / 24 hrs</p>
-  ${createProgressBar(weekHours, 24, weekColor)}
-  <p><strong>This Fortnight:</strong> ${fortnightHours.toFixed(1)} hrs / 48 hrs</p>
-  ${createProgressBar(fortnightHours, 48, fortnightColor)}
-`;
-
-
-  /* ----- VISUAL CHARTS ----- */
+  /* ---------- VISUAL CHARTS ---------- */
   if (shifts.length > 0) {
     const ctx1 = document.getElementById('hoursChart');
     const ctx2 = document.getElementById('incomeChart');
 
-    // -------- FIXED: Hours by Workplace --------
+    // Hours by Workplace
     const hoursByWorkplace = {};
     shifts.forEach(shift => {
       const job = shift.job || "Other";
@@ -205,29 +212,22 @@ restrictionDiv.innerHTML = `
           }
         },
         scales: {
-          x: {
-            ticks: { color: '#333', font: { family: 'Poppins' } },
-            grid: { display: false }
-          },
-          y: {
-            ticks: { color: '#333', font: { family: 'Poppins' } },
-            grid: { color: 'rgba(200,200,200,0.1)' },
-            beginAtZero: true
-          }
+          x: { ticks: { color: '#333' }, grid: { display: false } },
+          y: { ticks: { color: '#333' }, beginAtZero: true }
         }
       }
     });
 
-    // -------- Weekly Income Chart --------
-    const weekly = {};
+    // Weekly Income Chart
+    const weeklyIncome = {};
     shifts.forEach(s => {
       const w = getWeek(s.date);
-      weekly[w] ??= { income: 0 };
-      weekly[w].income += s.income;
+      weeklyIncome[w] ??= { income: 0 };
+      weeklyIncome[w].income += s.income;
     });
 
-    const weeks = Object.keys(weekly);
-    const inc = weeks.map(w => weekly[w].income);
+    const weeks = Object.keys(weeklyIncome);
+    const inc = weeks.map(w => weeklyIncome[w].income);
 
     if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
     window.incomeChart = new Chart(ctx2, {
@@ -248,7 +248,7 @@ restrictionDiv.innerHTML = `
       options: { plugins: { legend: { position: 'bottom' } } }
     });
 
-    // -------- Donut Charts --------
+    // Donut Charts
     const jobTotals = {};
     shifts.forEach(s => {
       jobTotals[s.job] ??= { hours: 0, income: 0 };
@@ -276,5 +276,101 @@ restrictionDiv.innerHTML = `
   }
 }
 
+/* ---------- CALENDAR HEATMAP (Larger Blocks, Perfect Alignment) ---------- */
+const calendarDiv = document.getElementById("calendarHeatmapGrid");
+if (calendarDiv) {
+  calendarDiv.innerHTML = "";
 
+  if (shifts.length === 0) {
+    calendarDiv.innerHTML = "<p>No shifts recorded yet.</p>";
+  } else {
+    const dayHours = {};
+    shifts.forEach(s => {
+      dayHours[s.date] = (dayHours[s.date] || 0) + s.hours;
+    });
 
+    // 📅 Current month range
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // 🧾 Month label
+    const heading = document.querySelector("h2");
+    if (heading && !document.getElementById("monthLabel")) {
+      heading.insertAdjacentHTML("afterend", `
+        <p id="monthLabel" style="color:#555;font-weight:500;margin-top:-10px;margin-bottom:18px;">
+          ${monthName}
+        </p>
+      `);
+    }
+
+    // 🎨 Color scale
+    const getColor = (hrs) => {
+      if (hrs === 0) return "#f4f1ff";
+      if (hrs < 3) return "#c4b5fd";
+      if (hrs < 6) return "#7dd3fc";
+      if (hrs < 9) return "#f9a8d4";
+      return "#fb7185";
+    };
+
+    // 🧠 Weekday header
+    const weekdays = ["S", "M", "T", "W", "T", "F", "S"];
+    const headerHTML = weekdays.map(d => `<div>${d}</div>`).join("");
+
+    const weekdayHeader = document.createElement("div");
+    weekdayHeader.id = "weekdayHeader";
+    weekdayHeader.style.display = "grid";
+    weekdayHeader.style.gridTemplateColumns = "repeat(7, 1fr)";
+    weekdayHeader.style.textAlign = "center";
+    weekdayHeader.style.gap = "6px";
+    weekdayHeader.style.marginBottom = "12px";
+    weekdayHeader.style.fontWeight = "600";
+    weekdayHeader.style.color = "#333";
+    weekdayHeader.innerHTML = headerHTML;
+    calendarDiv.parentNode.insertBefore(weekdayHeader, calendarDiv);
+
+    // 🧩 Calendar grid
+    const firstDayOffset = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    let html = "";
+    for (let i = 0; i < firstDayOffset; i++) html += `<div></div>`;
+
+    for (let d = 1; d <= totalDays; d++) {
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const hrs = dayHours[dateStr] || 0;
+
+      html += `
+        <div title="${dateStr}: ${hrs.toFixed(1)} hrs"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: ${getColor(hrs)};
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.08);
+            color: ${hrs > 0 ? '#222' : '#aaa'};
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0 auto;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+          "
+          onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 0 12px rgba(0,0,0,0.15)'"
+          onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 0 8px rgba(0,0,0,0.08)'"
+        >${d}</div>
+      `;
+    }
+
+    // 🧱 Perfect grid alignment
+    calendarDiv.style.display = "grid";
+    calendarDiv.style.gridTemplateColumns = "repeat(7, 1fr)";
+    calendarDiv.style.gap = "12px";
+    calendarDiv.style.padding = "10px 0";
+    calendarDiv.style.textAlign = "center";
+    calendarDiv.style.justifyItems = "center";
+    calendarDiv.innerHTML = html;
+  }
+}
