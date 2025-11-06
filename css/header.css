@@ -49,13 +49,14 @@ nav a {
   color: #222;
   text-decoration: none;
   font-family: "Playfair Display", serif;
-  font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: 0.3px;
-  padding-bottom: 3px;
+  font-weight: 500;
+  font-size: 0.95rem; /* smaller text */
+  letter-spacing: 0.2px;
+  padding-bottom: 2px;
   position: relative;
   transition: color 0.3s, transform 0.2s ease;
 }
+
 
 /* --- Hover underline effect --- */
 nav a::after {
@@ -207,28 +208,37 @@ body.menu-open {
 
   /* --- MOBILE MENU BUTTONS --- */
   #navMenu a {
-    position: relative;
-    display: block;
-    width: 85%;
-    max-width: 330px;
-    text-align: center;
-    padding: 1.3rem 0;
-    margin: 1rem 0;
-    border-radius: 24px;
-    font-family: "Cormorant Garamond", serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    color: #1a1a1a;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12),
-                inset 0 1px 8px rgba(255, 255, 255, 0.5);
-    text-decoration: none;
-    overflow: hidden;
-    transition: all 0.4s ease-in-out;
+  position: relative;
+  display: block;
+  width: 80%;               /* slightly narrower */
+  max-width: 280px;         /* smaller max width */
+  text-align: center;
+  padding: 0.9rem 0;        /* reduced vertical padding */
+  margin: 0.6rem 0;         /* less spacing between buttons */
+  border-radius: 20px;      /* subtler rounding */
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.3rem;        /* smaller text */
+  font-weight: 600;
+  letter-spacing: 0.4px;    /* tighter spacing */
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1),
+              inset 0 1px 6px rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 400px) {
+  #navMenu a {
+    font-size: 1.1rem;
+    padding: 0.8rem 0;
+    width: 78%;
   }
+}
+
 
   /* gradient shimmer */
   #navMenu a::before {
