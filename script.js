@@ -269,33 +269,38 @@ function initDashboard() {
 }
 
 /* =========================================
-   VISUAL CHARTS
+   VISUAL CHARTS (Supabase Edition)
    ========================================= */
-function renderCharts() {
-  const ctx1 = document.getElementById("hoursChart");
-  const ctx2 = document.getElementById("incomeChart");
-  const ctx3 = document.getElementById("hoursDonutChart");
-  const ctx4 = document.getElementById("incomeDonutChart");
+async function renderCharts() {
+  // ✅ Ensure Supabase shifts are loaded
+  await loadShifts();
+  const shifts = window.shifts || [];
 
-  if (!ctx1 || !ctx2) return;
+  if (shifts.length === 0) return;
 
+  const ctx1 = document.getElementById('hoursChart');
+  const ctx2 = document.getElementById('incomeChart');
+  const ctx3 = document.getElementById('hoursDonutChart');
+  const ctx4 = document.getElementById('incomeDonutChart');
+
+  // 🟣 Hours by Workplace
   const hoursByWorkplace = {};
   shifts.forEach(shift => {
     const job = shift.job || "Other";
-    hoursByWorkplace[job] = (hoursByWorkplace[job] || 0) + shift.hours;
+    hoursByWorkplace[job] = (hoursByWorkplace[job] || 0) + (shift.hours || 0);
   });
 
   const jobNames = Object.keys(hoursByWorkplace);
   const jobHours = Object.values(hoursByWorkplace);
   const colors = ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'];
 
-  if (window.hoursChart && typeof window.hoursChart.destroy === "function") window.hoursChart.destroy();
+  if (window.hoursChart && typeof window.hoursChart.destroy === 'function') window.hoursChart.destroy();
   window.hoursChart = new Chart(ctx1, {
-    type: "bar",
+    type: 'bar',
     data: {
       labels: jobNames,
       datasets: [{
-        label: "Hours by Workplace",
+        label: 'Hours by Workplace',
         data: jobHours,
         backgroundColor: colors.slice(0, jobNames.length),
         borderRadius: 8
@@ -306,47 +311,182 @@ function renderCharts() {
         legend: { display: false },
         title: {
           display: true,
-          text: "Work Hours by Workplace",
-          font: { family: "Outfit", size: 18, weight: 600 },
-          color: "#2d2d2d"
+          text: 'Work Hours by Workplace',
+          font: { family: 'Outfit', size: 18, weight: 600 },
+          color: '#2d2d2d'
         }
       },
       scales: {
-        x: { ticks: { color: "#333" }, grid: { display: false } },
-        y: { ticks: { color: "#333" }, beginAtZero: true }
+        x: { ticks: { color: '#333' }, grid: { display: false } },
+        y: { ticks: { color: '#333' }, beginAtZero: true }
       }
     }
   });
 
+  // 💜 Weekly Income Trend
   const weeklyIncome = {};
   shifts.forEach(s => {
     const w = getWeek(s.date);
-    weeklyIncome[w] ??= { income: 0 };
-    weeklyIncome[w].income += s.income;
+    weeklyIncome[w] = (weeklyIncome[w] || 0) + (s.income || 0);
   });
 
-  const weeks = Object.keys(weeklyIncome);
-  const inc = weeks.map(w => weeklyIncome[w].income);
+  const weeks = Object.keys(weeklyIncome).sort((a, b) => new Date(a) - new Date(b));
+  const inc = weeks.map(w => weeklyIncome[w]);
 
-  if (window.incomeChart && typeof window.incomeChart.destroy === "function") window.incomeChart.destroy();
+  if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
   window.incomeChart = new Chart(ctx2, {
-    type: "line",
+    type: 'line',
     data: {
       labels: weeks,
       datasets: [{
-        label: "Weekly Income (AUD)",
+        label: 'Weekly Income (AUD)',
         data: inc,
-        borderColor: "#a78bfa",
-        backgroundColor: "rgba(200,182,255,0.2)",
+        borderColor: '#a78bfa',
+        backgroundColor: 'rgba(200,182,255,0.2)',
         tension: 0.4,
-        pointBackgroundColor: "#ffb7c5",
+        pointBackgroundColor: '#ffb7c5',
         pointRadius: 5,
         fill: true
       }]
     },
-    options: { plugins: { legend: { position: "bottom" } } }
+    options: {
+      plugins: {
+        legend: { position: 'bottom' },
+        title: {
+          display: true,
+          text: 'Weekly Income Trend',
+          font: { family: 'Outfit', size: 16, weight: 600 },
+          color: '#333'
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#444' }, grid: { display: false } },
+        y: { ticks: { color: '#444' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // 💖 Donut Charts — Hours & Income by Workplace
+  const jobTotals = {};
+  shifts.forEach(s => {
+    const job = s.job || "Other";
+    jobTotals[job] ??= { hours: 0, income: 0 };
+    jobTotals[job].hours += (s.hours || 0);
+    jobTotals[job].income += (s.income || 0);
+  });
+
+  const jobIncomes = Object.keys(jobTotals).map(j => jobTotals[j].income);
+
+  if (window.hoursDonutChart && typeof window.hoursDonutChart.destroy === 'function') window.hoursDonutChart.destroy();
+  if (window.incomeDonutChart && typeof window.incomeDonutChart.destroy === 'function') window.incomeDonutChart.destroy();
+
+  window.hoursDonutChart = new Chart(ctx3, {
+    type: 'doughnut',
+    data: {
+      labels: jobNames,
+      datasets: [{
+        data: jobHours,
+        backgroundColor: colors.slice(0, jobNames.length)
+      }]
+    },
+    options: { plugins: { legend: { position: 'right' } } }
+  });
+
+  window.incomeDonutChart = new Chart(ctx4, {
+    type: 'doughnut',
+    data: {
+      labels: jobNames,
+      datasets: [{
+        data: jobIncomes,
+        backgroundColor: colors.slice(0, jobNames.length)
+      }]
+    },
+    options: { plugins: { legend: { position: 'right' } } }
   });
 }
+
+
+/* =========================================
+   PAGE: INCOME (Supabase Edition)
+   ========================================= */
+async function initIncomePage() {
+  const incomeSummary = document.getElementById("incomeSummary");
+  const ctx = document.getElementById("incomeFlowChart");
+
+  // ✅ Fetch latest shifts from Supabase
+  await loadShifts();
+  const shifts = window.shifts || [];
+
+  if (shifts.length === 0) {
+    incomeSummary.innerHTML = `<p>No income data yet. Add your shifts first.</p>`;
+    return;
+  }
+
+  /* ---------- 1️⃣ Group Income by Week ---------- */
+  const weeklyIncome = {};
+  shifts.forEach((s) => {
+    const week = getWeek(s.date);
+    weeklyIncome[week] = (weeklyIncome[week] || 0) + s.income;
+  });
+
+  const weeks = Object.keys(weeklyIncome).sort((a, b) => new Date(a) - new Date(b));
+  const incomes = weeks.map((w) => weeklyIncome[w]);
+
+  /* ---------- 2️⃣ Render Weekly Income Chart ---------- */
+  if (window.incomeChart && typeof window.incomeChart.destroy === "function")
+    window.incomeChart.destroy();
+
+  window.incomeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: weeks,
+      datasets: [
+        {
+          label: "Weekly Income (AUD)",
+          data: incomes,
+          borderColor: "#a78bfa",
+          backgroundColor: "rgba(200,182,255,0.25)",
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "#ffb7c5",
+          pointRadius: 5,
+        },
+      ],
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: "Weekly Income Trend",
+          color: "#333",
+          font: { family: "Outfit", size: 16, weight: "600" },
+        },
+      },
+      scales: {
+        x: { ticks: { color: "#444" }, grid: { display: false } },
+        y: { ticks: { color: "#444" }, beginAtZero: true },
+      },
+    },
+  });
+
+  /* ---------- 3️⃣ Calculate Monthly + Total Income ---------- */
+  const now = new Date();
+  const thisMonth = now.getMonth();
+
+  const monthlyIncome = shifts
+    .filter((s) => new Date(s.date).getMonth() === thisMonth)
+    .reduce((sum, s) => sum + (s.income || 0), 0);
+
+  const totalIncome = shifts.reduce((sum, s) => sum + (s.income || 0), 0);
+
+  /* ---------- 4️⃣ Display Summary ---------- */
+  incomeSummary.innerHTML = `
+    <strong>This Month:</strong> $${monthlyIncome.toFixed(2)}<br>
+    <strong>Total Overall:</strong> $${totalIncome.toFixed(2)}
+  `;
+}
+
 
 /* =========================================
    CALENDAR HEATMAP (Fixed)
