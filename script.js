@@ -536,3 +536,120 @@ if (document.getElementById("incomeFlowChart")) {
     `;
   }
 }
+/* =========================================
+   PAGE: CONFLICTS (Overlap + Availability Suggestions)
+   ========================================= */
+if (document.getElementById("conflictList")) {
+  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+  const list = document.getElementById("conflictList");
+
+  if (shifts.length === 0) {
+    list.innerHTML = `<p class="no-conflicts">No shifts added yet.</p>`;
+  } else {
+    const conflicts = [];
+    const availabilityAdvice = {};
+
+    // Sort by date for clarity
+    shifts.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Compare each pair for overlaps
+    for (let i = 0; i < shifts.length; i++) {
+      for (let j = i + 1; j < shifts.length; j++) {
+        const s1 = shifts[i];
+        const s2 = shifts[j];
+
+        if (s1.date === s2.date && checkOverlap(s1, s2)) {
+          // Calculate overlap window
+          const startA = new Date(`${s1.date}T${s1.start}`);
+          const endA = new Date(`${s1.date}T${s1.end}`);
+          const startB = new Date(`${s2.date}T${s2.start}`);
+          const endB = new Date(`${s2.date}T${s2.end}`);
+
+          const overlapStart = new Date(Math.max(startA, startB));
+          const overlapEnd = new Date(Math.min(endA, endB));
+          const overlapHours = (overlapEnd - overlapStart) / 3600000;
+
+          conflicts.push({
+            date: s1.date,
+            shiftA: s1,
+            shiftB: s2,
+            overlapStart,
+            overlapEnd,
+            overlapHours,
+          });
+        }
+      }
+    }
+
+    // Render conflicts first
+    if (conflicts.length > 0) {
+      conflicts.forEach((c) => {
+        const li = document.createElement("li");
+        li.className = "conflict-item";
+
+        const formatTime = (t) =>
+          t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const start = formatTime(c.overlapStart);
+        const end = formatTime(c.overlapEnd);
+
+        li.innerHTML = `
+          <h3>${new Date(c.date).toDateString()}</h3>
+          <p><strong>Shift 1:</strong> ${c.shiftA.job} — ${c.shiftA.start} to ${c.shiftA.end}</p>
+          <p><strong>Shift 2:</strong> ${c.shiftB.job} — ${c.shiftB.start} to ${c.shiftB.end}</p>
+          <p class="conflict-details">⚠️ Overlap from <strong>${start}</strong> to <strong>${end}</strong> (${c.overlapHours.toFixed(2)} hrs)</p>
+          <p class="availability-advice">Block availability between ${start}–${end} on ${new Date(
+          c.date
+        ).toDateString()} at both <strong>${c.shiftA.job}</strong> and <strong>${
+          c.shiftB.job
+        }</strong>.</p>
+        `;
+        list.appendChild(li);
+      });
+    } else {
+      list.innerHTML = `<p class="no-conflicts">✅ No overlapping shifts detected!</p>`;
+    }
+
+    // Generate per-day “block availability” suggestions
+    shifts.forEach((shift) => {
+      if (!availabilityAdvice[shift.date]) {
+        availabilityAdvice[shift.date] = new Set();
+      }
+      availabilityAdvice[shift.date].add(shift.job);
+    });
+
+    // Add availability section
+    const adviceHeader = document.createElement("h2");
+    adviceHeader.textContent = "Availability Suggestions";
+    adviceHeader.style.marginTop = "2rem";
+    adviceHeader.style.marginBottom = "0.5rem";
+    list.appendChild(adviceHeader);
+
+    const adviceUl = document.createElement("ul");
+    adviceUl.className = "availability-list";
+
+    Object.entries(availabilityAdvice).forEach(([date, jobs]) => {
+      const bookedJobs = Array.from(jobs);
+      const allWorkplaces = JSON.parse(localStorage.getItem("workplaces")) || [];
+      const blocked = allWorkplaces.filter(
+        (w) => !bookedJobs.includes(w)
+      );
+
+      const li = document.createElement("li");
+      li.className = "availability-item";
+      li.innerHTML = `
+        <h3>${new Date(date).toDateString()}</h3>
+        <p><strong>Booked at:</strong> ${bookedJobs.join(", ")}</p>
+        ${
+          blocked.length > 0
+            ? `<p class="block-advice">Block this date for: <strong>${blocked.join(
+                ", "
+              )}</strong></p>`
+            : `<p class="block-advice">No other workplaces to block — all free.</p>`
+        }
+      `;
+      adviceUl.appendChild(li);
+    });
+
+    list.appendChild(adviceUl);
+  }
+}
