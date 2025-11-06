@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RosterFlow Dashboard</title>
+  <title>RosterFlow — Dashboard</title>
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/dashboard.css">
-  
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -16,32 +15,25 @@
 
 <body>
   <header>
-  <div class="logo">
-    <h1>RosterFlow</h1>
-  </div>
+    <div class="logo"><h1>RosterFlow</h1></div>
 
-  <nav id="navMenu">
-    <a href="dashboard.html">Dashboard</a>
-    <a href="add.html">Add Shifts</a>
-    <a href="calendar.html">Calendar</a>
-    <a href="income.html">Income</a>
-    <a href="conflicts.html">Conflicts</a>
-  </nav>
+    <nav id="navMenu">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="add.html">Add Shifts</a>
+      <a href="calendar.html">Calendar</a>
+      <a href="income.html">Income</a>
+      <a href="conflicts.html">Conflicts</a>
+    </nav>
 
-  <div class="hamburger" id="hamburger">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <div id="menuOverlay"></div>
+  </header>
 
-  <!-- ✅ Overlay (must be inside body but outside header layout flow) -->
-  <div id="menuOverlay"></div>
-</header>
-
-  <main class="dashboard-container" id="dashboard">
+  <main class="dashboard-container">
+    <!-- 🌈 Weekly Overview Cards -->
     <section class="dashboard-card dashboard-summary" id="dashboardSummary">
       <h2>Weekly Overview</h2>
-      <!-- summary text injected by script.js -->
+      <div id="weeklyCards" class="summary-cards"></div>
     </section>
 
     <section class="dashboard-card chart-section">
@@ -75,54 +67,39 @@
     </section>
   </main>
 
-  <!-- Scripts -->
   <script src="script.js"></script>
 
-  <!-- Auto-active navbar highlight -->
+  <!-- Active nav highlight -->
   <script>
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('nav a').forEach(link => {
-      if (link.getAttribute('href') === currentPage) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
   </script>
 
   <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.getElementById("hamburger");
-  const navMenu = document.getElementById("navMenu");
-  const overlay = document.getElementById("menuOverlay");
+  document.addEventListener("DOMContentLoaded", () => {
+    const hamburger = document.getElementById("hamburger");
+    const navMenu = document.getElementById("navMenu");
+    const overlay = document.getElementById("menuOverlay");
 
-  // ✅ Open & close menu on hamburger click
-  hamburger.addEventListener("click", () => {
-    const isActive = hamburger.classList.toggle("active");
-    navMenu.classList.toggle("active", isActive);
-    overlay.classList.toggle("active", isActive);
-    document.body.classList.toggle("menu-open", isActive); // prevent scroll
+    hamburger.addEventListener("click", () => {
+      const isActive = hamburger.classList.toggle("active");
+      navMenu.classList.toggle("active", isActive);
+      overlay.classList.toggle("active", isActive);
+      document.body.classList.toggle("menu-open", isActive);
+    });
+
+    overlay.addEventListener("click", closeMenu);
+    document.querySelectorAll("#navMenu a").forEach(link => link.addEventListener("click", closeMenu));
+
+    function closeMenu() {
+      hamburger.classList.remove("active");
+      navMenu.classList.remove("active");
+      overlay.classList.remove("active");
+      document.body.classList.remove("menu-open");
+    }
   });
-
-  // ✅ Close menu when overlay is clicked
-  overlay.addEventListener("click", () => {
-    closeMenu();
-  });
-
-  // ✅ Close menu when any link is clicked
-  document.querySelectorAll("#navMenu a").forEach(link => {
-    link.addEventListener("click", () => closeMenu());
-  });
-
-  // ✅ Helper: close all active states
-  function closeMenu() {
-    hamburger.classList.remove("active");
-    navMenu.classList.remove("active");
-    overlay.classList.remove("active");
-    document.body.classList.remove("menu-open");
-  }
-});
-</script>
-
+  </script>
 </body>
 </html>

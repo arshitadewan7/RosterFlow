@@ -133,10 +133,18 @@ if (document.getElementById('dashboardSummary')) {
   });
 
   // Display summary
-  const summary = Object.entries(weekly)
-    .map(([w, v]) => `<p>Week of ${w}: ${v.total.toFixed(1)} hrs, $${v.income.toFixed(2)}</p>`)
-    .join('');
-  document.getElementById('dashboardSummary').innerHTML = summary || '<p>No shifts added yet.</p>';
+  // Replace old summary display with glass cards
+const summaryContainer = document.getElementById("weeklyCards");
+summaryContainer.innerHTML = Object.entries(weekly)
+  .map(([w, v]) => `
+    <div class="summary-card">
+      <h3>Week of ${w}</h3>
+      <p><strong>${v.total.toFixed(1)} hrs</strong></p>
+      <p>$${v.income.toFixed(2)} earned</p>
+    </div>
+  `)
+  .join('') || `<p>No shifts added yet.</p>`;
+
 
   /* ---------- WORK RESTRICTION TRACKER ---------- */
   const restrictionDiv = document.getElementById('restrictionSection');

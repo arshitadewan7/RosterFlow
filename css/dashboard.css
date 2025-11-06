@@ -298,3 +298,54 @@ button:hover, .export-btn:hover {
     height: 16px;
   }
 }
+
+/* ---------- Weekly Summary Cards ---------- */
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-top: 1rem;
+  justify-content: flex-start;
+}
+
+.summary-card {
+  flex: 1 1 240px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.7), rgba(244,240,255,0.7));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 1rem;
+  padding: 1.2rem;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+}
+
+.summary-card h3 {
+  color: #6b21a8;
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+.summary-card p {
+  color: #333;
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.summary-card strong {
+  color: #111;
+  font-size: 1rem;
+}
+
+/* Soft fade-in animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.summary-card { animation: fadeUp 0.6s ease; }
