@@ -392,6 +392,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function renderDetailedCalendar() {
   const container = document.getElementById("calendarContainer");
+  if (!container) return; // ✅ Prevents error on non-calendar pages
+
   container.innerHTML = "";
 
   const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
@@ -661,3 +663,10 @@ if (document.getElementById("conflictList")) {
     list.appendChild(adviceUl);
   }
 }
+// ✅ Safely attach export button listener only if it exists
+document.addEventListener("DOMContentLoaded", () => {
+  const exportBtn = document.getElementById("exportCalendarBtn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportToICS);
+  }
+});
