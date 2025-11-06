@@ -195,3 +195,72 @@ body {
     font-size: 0.85rem;
   }
 }
+
+/* ---------- Table Container ---------- */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+/* ---------- Table Styling ---------- */
+#shiftsTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+  text-align: left;
+}
+
+#shiftsTable th,
+#shiftsTable td {
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+
+#shiftsTable th {
+  background: #f3e8ff;
+  color: #3b0764;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+#shiftsTable td {
+  font-size: 0.9rem;
+  color: #333;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ---------- Responsive Behavior ---------- */
+@media (max-width: 700px) {
+  .table-container {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.7);
+  }
+
+  #shiftsTable {
+    min-width: 550px;
+  }
+
+  #shiftsTable th,
+  #shiftsTable td {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  #shiftsTable button {
+    padding: 0.35rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+  }
+}
+
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #a78bfa, #7dd3fc);
+  border-radius: 3px;
+}
