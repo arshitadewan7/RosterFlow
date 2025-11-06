@@ -268,3 +268,73 @@ nav a.active {
     height: 16px;
   }
 }
+/* ---------- Detailed Calendar Cards ---------- */
+#calendarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.calendar-date-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.calendar-date-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+}
+
+.calendar-date-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.6rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.calendar-date-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-date-card li {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+
+/* ---------- No shifts message ---------- */
+.no-shifts {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* ---------- Export Button ---------- */
+.export-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.export-btn {
+  background: linear-gradient(90deg, #ff9fd6, #7ed5ff);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}

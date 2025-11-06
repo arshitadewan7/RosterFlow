@@ -374,3 +374,93 @@ if (calendarDiv) {
     calendarDiv.innerHTML = html;
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderDetailedCalendar();
+
+  // Hook up export button
+  document.getElementById("exportCalendarBtn").addEventListener("click", exportToICS);
+});
+
+function renderDetailedCalendar() {
+  const container = document.getElementById("calendarContainer");
+  container.innerHTML = "";
+
+  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+
+  if (shifts.length === 0) {
+    container.innerHTML = `<p class="no-shifts">No shifts found. Add shifts to view them here.</p>`;
+    return;
+  }
+
+  // Group shifts by date
+  const grouped = {};
+  shifts.forEach(shift => {
+    const date = shift.date;
+    if (!grouped[date]) grouped[date] = [];
+    grouped[date].push(shift);
+  });
+
+  // Render grouped shifts
+  Object.keys(grouped)
+    .sort((a, b) => new Date(a) - new Date(b))
+    .forEach(date => {
+      const card = document.createElement("div");
+      card.className = "calendar-date-card";
+      card.innerHTML = `
+        <h3>${new Date(date).toDateString()}</h3>
+        <ul>
+          ${grouped[date]
+            .map(
+              shift => `
+              <li>
+                <strong>${shift.job || shift.workplace || "Work"}</strong> • 
+                ${shift.start || shift.startTime || "?"}–${shift.end || shift.endTime || "?"} 
+                (${shift.hours?.toFixed(2) || 0} hrs, $${shift.income?.toFixed(2) || 0})
+              </li>`
+            )
+            .join("")}
+        </ul>
+      `;
+      container.appendChild(card);
+    });
+}
+
+
+function exportToICS() {
+  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+
+  if (shifts.length === 0) {
+    alert("No shifts to export!");
+    return;
+  }
+
+  let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//RosterFlow//EN\n";
+
+  shifts.forEach(shift => {
+    const start = new Date(`${shift.date}T${shift.start}`);
+    const end = new Date(`${shift.date}T${shift.end}`);
+
+    const formatDate = date =>
+      date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+    icsContent += `BEGIN:VEVENT\n`;
+    icsContent += `SUMMARY:${shift.job || "Shift"}\n`;
+    icsContent += `DTSTART:${formatDate(start)}\n`;
+    icsContent += `DTEND:${formatDate(end)}\n`;
+    icsContent += `DESCRIPTION:Worked ${shift.hours?.toFixed(2)} hours, earned $${shift.income?.toFixed(2)}\n`;
+    icsContent += `END:VEVENT\n`;
+  });
+
+  icsContent += "END:VCALENDAR";
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "RosterFlow_Shifts.ics";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
