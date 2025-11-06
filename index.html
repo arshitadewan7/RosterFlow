@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RosterFlow</title>
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="responsive.css">
-
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
   <style>
@@ -99,7 +99,9 @@
     <button id="getStarted">Get Started</button>
   </div>
 
-  <script>
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
     // === 3D BACKGROUND ===
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -109,10 +111,8 @@
     document.body.appendChild(renderer.domElement);
     document.getElementById('bg').replaceWith(renderer.domElement);
 
-    // Camera
     camera.position.z = 14;
 
-    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 1);
     const pinkLight = new THREE.PointLight(0xffb7c5, 1.2);
     pinkLight.position.set(-5, 3, 5);
@@ -120,7 +120,6 @@
     mintLight.position.set(5, -3, 4);
     scene.add(ambient, pinkLight, mintLight);
 
-    // Particles
     const geometry = new THREE.BufferGeometry();
     const count = 3000;
     const positions = new Float32Array(count * 3);
@@ -130,7 +129,6 @@
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
 
-    // Glowing Ring
     const ringGeo = new THREE.TorusGeometry(5, 0.15, 30, 200);
     const ringMat = new THREE.MeshStandardMaterial({
       color: 0xd4b5ff,
@@ -143,7 +141,6 @@
     ring.rotation.x = Math.PI / 2;
     scene.add(ring);
 
-    // Floating Orbs
     const orbGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const orbMat1 = new THREE.MeshStandardMaterial({ color: 0xffc6de, emissive: 0xffb6c1, emissiveIntensity: 0.6 });
     const orbMat2 = new THREE.MeshStandardMaterial({ color: 0xc8b6ff, emissive: 0xc8b6ff, emissiveIntensity: 0.6 });
@@ -153,7 +150,6 @@
     orb2.position.set(-3, -2, -1);
     scene.add(orb1, orb2);
 
-    // Parallax mouse motion
     document.addEventListener("mousemove", (e) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * -2;
@@ -161,7 +157,6 @@
       camera.position.y = y * 1.5;
     });
 
-    // Animation
     let zooming = false;
     const animate = () => {
       requestAnimationFrame(animate);
@@ -180,15 +175,36 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // === BUTTON CLICK (Guaranteed Working) ===
-    document.getElementById("getStarted").addEventListener("click", () => {
+    // === BUTTON CLICK (redirect only when clicked) ===
+    document.getElementById("getStarted").addEventListener("click", async () => {
       zooming = true;
       document.body.classList.add("fade-out");
 
-      // ✅ Make sure this matches your actual dashboard page
-      const nextPage = "dashboard.html"; // or "index.html"
+      // 🔍 Check Supabase session only on click
+      const { data } = await supabase.auth.getUser();
+
+      // ✅ Redirect based on login status
+      const nextPage = data.user ? "dashboard.html" : "login.html";
       setTimeout(() => (window.location.href = nextPage), 1200);
     });
   </script>
+
+  
+
+  <script type="module">
+  import { supabase } from "./supabase.js";
+
+  document.getElementById("getStarted").addEventListener("click", async () => {
+    document.body.classList.add("fade-out");
+
+    // 🔍 Check session only when button is clicked
+    const { data } = await supabase.auth.getUser();
+
+    // Redirect based on session
+    const nextPage = data.user ? "dashboard.html" : "login.html";
+    setTimeout(() => (window.location.href = nextPage), 1200);
+  });
+</script>
+
 </body>
 </html>

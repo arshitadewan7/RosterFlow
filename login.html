@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In | RosterFlow</title>
+
+  <link rel="stylesheet" href="css/auth.css" />
+
+  <style>
+    /* 🎨 Google Button Styling */
+    .google-btn {
+      margin-top: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: white;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 40px;
+      padding: 12px 30px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
+    .google-btn:hover {
+      background: #f3f3f3;
+      transform: scale(1.05);
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+
+<body class="auth-bg">
+  <div class="auth-container glass-card">
+    <h1>Welcome Back 👋</h1>
+    <p class="subtitle">Log in to access your RosterFlow dashboard.</p>
+
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit" class="btn-gradient">Log In</button>
+    </form>
+
+    <!-- Google Login -->
+    <button id="googleLoginBtn" class="google-btn">
+      <img src="assets/google-icon.svg" alt="Google icon">
+      Continue with Google
+    </button>
+
+    <p class="auth-footer">
+      Don’t have an account? <a href="signup.html">Sign up</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { supabase } from "./supabase.js";
+
+    // ✅ Email + Password Login (no email confirmation required)
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        alert("Login failed: " + error.message);
+      } else if (data?.session) {
+        // ✅ Successful login — user is instantly logged in
+        alert("Welcome back!");
+        window.location.href = "dashboard.html";
+      } else {
+        // ❗ Edge case — no session returned (shouldn’t happen now)
+        alert("Unexpected login state. Please try again.");
+      }
+    });
+
+    // ✅ Google Login (OAuth)
+    const googleBtn = document.getElementById("googleLoginBtn");
+    googleBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/dashboard.html"
+        }
+      });
+      if (error) alert("Google login failed: " + error.message);
+    });
+  </script>
+</body>
+</html>

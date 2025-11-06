@@ -18,14 +18,16 @@
     <div class="logo"><h1>RosterFlow</h1></div>
 
     <nav id="navMenu">
-      <a href="dashboard.html">Dashboard</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
       <a href="add.html">Add Shifts</a>
       <a href="calendar.html">Calendar</a>
       <a href="income.html">Income</a>
       <a href="conflicts.html">Conflicts</a>
     </nav>
 
-    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <div class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
     <div id="menuOverlay"></div>
   </header>
 
@@ -67,22 +69,16 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <button id="logoutBtn">Logout</button>
 
-  <!-- Active nav highlight -->
-  <script>
-    const currentPage = window.location.pathname.split('/').pop();
-    document.querySelectorAll('nav a').forEach(link => {
-      link.classList.toggle('active', link.getAttribute('href') === currentPage);
-    });
-  </script>
-
+  <!-- ✅ Hamburger Menu -->
   <script>
   document.addEventListener("DOMContentLoaded", () => {
     const hamburger = document.getElementById("hamburger");
     const navMenu = document.getElementById("navMenu");
     const overlay = document.getElementById("menuOverlay");
 
+    // Open / close menu on hamburger click
     hamburger.addEventListener("click", () => {
       const isActive = hamburger.classList.toggle("active");
       navMenu.classList.toggle("active", isActive);
@@ -90,6 +86,7 @@
       document.body.classList.toggle("menu-open", isActive);
     });
 
+    // Close menu on overlay or link click
     overlay.addEventListener("click", closeMenu);
     document.querySelectorAll("#navMenu a").forEach(link => link.addEventListener("click", closeMenu));
 
@@ -100,6 +97,17 @@
       document.body.classList.remove("menu-open");
     }
   });
+  </script>
+  
+
+
+  <!-- ✅ Main Scripts -->
+  <script type="module">
+    import { supabase, checkSession } from "./supabase.js";
+    import "./script.js";
+
+    // 🔒 Ensure user is logged in before accessing this page
+    await checkSession();
   </script>
 </body>
 </html>

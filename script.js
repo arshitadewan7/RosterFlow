@@ -1,73 +1,127 @@
 /* =========================================
-   RosterFlow — Unified Script (Add + Dashboard + Calendar)
+   RosterFlow — Unified Script (Add + Dashboard + Calendar + Income + Conflicts)
    ========================================= */
 
-/* ---------- LOCAL STORAGE SETUP ---------- */
-let shifts = JSON.parse(localStorage.getItem('shifts')) || [];
-let workplaces = JSON.parse(localStorage.getItem('workplaces')) || [];
+/* =========================================
+   🔐 Supabase Authentication + Cloud Sync Setup
+   ========================================= */
 
-// Save data
-function save() {
-  localStorage.setItem('shifts', JSON.stringify(shifts));
-  localStorage.setItem('workplaces', JSON.stringify(workplaces));
+   
+import { supabase } from "./supabase.js";
+
+let currentUser = null;
+let shifts = [];
+let workplaces = [];
+
+/* ---------- INITIAL SETUP ---------- */
+(async () => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  currentUser = data.user;
+  await loadWorkplaces();
+  await loadShifts();
+
+  if (document.getElementById("shiftForm")) initAddShiftPage();
+  if (document.getElementById("dashboardSummary")) initDashboard();
+  if (document.getElementById("calendarContainer") || document.getElementById("calendarHeatmapGrid")) renderDetailedCalendar();
+  if (document.getElementById("incomeFlowChart")) initIncomePage();
+  if (document.getElementById("conflictList")) initConflictsPage();
+})();
+
+/* ---------- Supabase Helpers ---------- */
+
+// Save workplace
+async function saveWorkplace(name) {
+  const { error } = await supabase.from("workplaces").insert([{ name, user_id: currentUser.id }]);
+  if (error) console.error("Error saving workplace:", error);
 }
 
-// Helper: Get start of week
+// Save shift
+async function saveShift(shift) {
+  const { error } = await supabase.from("shifts").insert([{ ...shift, user_id: currentUser.id }]);
+  if (error) console.error("Error saving shift:", error);
+}
+
+// Fetch all workplaces
+async function loadWorkplaces() {
+  const { data, error } = await supabase
+    .from("workplaces")
+    .select("*")
+    .eq("user_id", currentUser.id);
+  if (!error) workplaces = data.map(w => w.name);
+}
+
+// Fetch all shifts
+async function loadShifts() {
+  const { data, error } = await supabase
+    .from("shifts")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("date", { ascending: true });
+  if (!error) shifts = data || [];
+}
+
+/* =========================================
+   COMMON HELPERS
+   ========================================= */
 function getWeek(date) {
   const d = new Date(date);
   const start = new Date(d.setDate(d.getDate() - d.getDay())); // Sunday
   return start.toISOString().slice(0, 10);
 }
 
-// Helper: Check overlapping shifts
 function checkOverlap(a, b) {
-  const a1 = new Date(`${a.date}T${a.start}`);
-  const a2 = new Date(`${a.date}T${a.end}`);
-  const b1 = new Date(`${b.date}T${b.start}`);
-  const b2 = new Date(`${b.date}T${b.end}`);
+  const a1 = new Date(`${a.date}T${a.start_time}`);
+  const a2 = new Date(`${a.date}T${a.end_time}`);
+  const b1 = new Date(`${b.date}T${b.start_time}`);
+  const b2 = new Date(`${b.date}T${b.end_time}`);
   return a1 < b2 && b1 < a2;
 }
 
 /* =========================================
    PAGE: ADD SHIFTS
    ========================================= */
-if (document.getElementById('shiftForm')) {
-  const jobSelect = document.getElementById('job');
+async function initAddShiftPage() {
+  const jobSelect = document.getElementById("job");
 
-  // Populate existing workplaces
+  // Populate workplaces
   workplaces.forEach(w => {
-    const o = document.createElement('option');
+    const o = document.createElement("option");
     o.value = o.textContent = w;
     jobSelect.appendChild(o);
   });
 
   // Add new workplace
-  const workplaceForm = document.getElementById('workplaceForm');
+  const workplaceForm = document.getElementById("workplaceForm");
   if (workplaceForm) {
-    workplaceForm.onsubmit = e => {
+    workplaceForm.onsubmit = async e => {
       e.preventDefault();
-      const name = document.getElementById('newWorkplace').value.trim();
+      const name = document.getElementById("newWorkplace").value.trim();
       if (name && !workplaces.includes(name)) {
         workplaces.push(name);
-        save();
-        const o = document.createElement('option');
+        await saveWorkplace(name);
+        const o = document.createElement("option");
         o.value = o.textContent = name;
         jobSelect.appendChild(o);
         jobSelect.value = name;
-        document.getElementById('newWorkplace').value = '';
+        document.getElementById("newWorkplace").value = "";
       }
     };
   }
 
   // Add new shift
-  document.getElementById('shiftForm').onsubmit = e => {
+  document.getElementById("shiftForm").onsubmit = async e => {
     e.preventDefault();
     const job = jobSelect.value;
-    const dateVal = document.getElementById('date').value;
-    const startVal = document.getElementById('start').value;
-    const endVal = document.getElementById('end').value;
-    const rateVal = parseFloat(document.getElementById('rate').value) || 30;
-    const notesVal = document.getElementById('notes').value.trim();
+    const dateVal = document.getElementById("date").value;
+    const startVal = document.getElementById("start").value;
+    const endVal = document.getElementById("end").value;
+    const rateVal = parseFloat(document.getElementById("rate").value) || 30;
+    const notesVal = document.getElementById("notes").value.trim();
 
     if (!job) {
       alert("Please add or select a workplace first.");
@@ -76,54 +130,59 @@ if (document.getElementById('shiftForm')) {
 
     const hours = (new Date(`${dateVal}T${endVal}`) - new Date(`${dateVal}T${startVal}`)) / 3600000;
     if (hours > 0) {
-      shifts.push({
+      const shift = {
         job,
         date: dateVal,
-        start: startVal,
-        end: endVal,
-        rate: rateVal,
-        notes: notesVal,
+        start_time: startVal,
+        end_time: endVal,
         hours,
-        income: hours * rateVal
-      });
-      save();
-      location.reload();
+        income: hours * rateVal,
+        notes: notesVal
+      };
+      await saveShift(shift);
+      alert("Shift added!");
+      await reloadShiftTable();
     } else {
       alert("End time must be after start time.");
     }
   };
 
-  // Display all shifts
-  const tbody = document.querySelector('#shiftsTable tbody');
-  if (tbody) {
-    shifts.forEach((s, i) => {
-      const r = document.createElement('tr');
-      r.innerHTML = `
-        <td>${s.job}</td>
-        <td>${s.date}</td>
-        <td>${s.start}</td>
-        <td>${s.end}</td>
-        <td>${s.hours.toFixed(2)}</td>
-        <td>$${s.income.toFixed(2)}</td>
-        <td>${s.notes ? s.notes : '-'}</td>
-        <td><button onclick="deleteShift(${i})" style="background:red">Delete</button></td>
-      `;
-      tbody.appendChild(r);
-    });
-  }
+  await reloadShiftTable();
+}
+
+// Reload and render shifts table
+async function reloadShiftTable() {
+  await loadShifts();
+  const tbody = document.querySelector("#shiftsTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  shifts.forEach(s => {
+    const r = document.createElement("tr");
+    r.innerHTML = `
+      <td>${s.job}</td>
+      <td>${s.date}</td>
+      <td>${s.start_time}</td>
+      <td>${s.end_time}</td>
+      <td>${s.hours.toFixed(2)}</td>
+      <td>$${s.income.toFixed(2)}</td>
+      <td>${s.notes || "-"}</td>
+      <td><button onclick="deleteShift(${s.id})" style="background:red">Delete</button></td>
+    `;
+    tbody.appendChild(r);
+  });
 }
 
 // Delete shift
-function deleteShift(i) {
-  shifts.splice(i, 1);
-  save();
-  location.reload();
+async function deleteShift(id) {
+  const { error } = await supabase.from("shifts").delete().eq("id", id);
+  if (error) alert("Error deleting shift: " + error.message);
+  else reloadShiftTable();
 }
 
 /* =========================================
    PAGE: DASHBOARD
    ========================================= */
-if (document.getElementById('dashboardSummary')) {
+function initDashboard() {
   const weekly = {};
   shifts.forEach(s => {
     const w = getWeek(s.date);
@@ -132,22 +191,20 @@ if (document.getElementById('dashboardSummary')) {
     weekly[w].income += s.income;
   });
 
-  // Display summary
-  // Replace old summary display with glass cards
-const summaryContainer = document.getElementById("weeklyCards");
-summaryContainer.innerHTML = Object.entries(weekly)
-  .map(([w, v]) => `
-    <div class="summary-card">
-      <h3>Week of ${w}</h3>
-      <p><strong>${v.total.toFixed(1)} hrs</strong></p>
-      <p>$${v.income.toFixed(2)} earned</p>
-    </div>
-  `)
-  .join('') || `<p>No shifts added yet.</p>`;
+  // Weekly Summary
+  const summaryContainer = document.getElementById("weeklyCards");
+  summaryContainer.innerHTML = Object.entries(weekly)
+    .map(([w, v]) => `
+      <div class="summary-card">
+        <h3>Week of ${w}</h3>
+        <p><strong>${v.total.toFixed(1)} hrs</strong></p>
+        <p>$${v.income.toFixed(2)} earned</p>
+      </div>
+    `)
+    .join('') || `<p>No shifts added yet.</p>`;
 
-
-  /* ---------- WORK RESTRICTION TRACKER ---------- */
-  const restrictionDiv = document.getElementById('restrictionSection');
+  // Work restriction tracker
+  const restrictionDiv = document.getElementById("restrictionSection");
   restrictionDiv.innerHTML = "";
 
   const now = new Date();
@@ -182,491 +239,217 @@ summaryContainer.innerHTML = Object.entries(weekly)
     ${createProgressBar(fortnightHours, 48, fortnightColor)}
   `;
 
-  /* ---------- VISUAL CHARTS ---------- */
-  if (shifts.length > 0) {
-    const ctx1 = document.getElementById('hoursChart');
-    const ctx2 = document.getElementById('incomeChart');
-
-    // Hours by Workplace
-    const hoursByWorkplace = {};
-    shifts.forEach(shift => {
-      const job = shift.job || "Other";
-      hoursByWorkplace[job] = (hoursByWorkplace[job] || 0) + shift.hours;
-    });
-
-    const jobNames = Object.keys(hoursByWorkplace);
-    const jobHours = Object.values(hoursByWorkplace);
-
-    if (window.hoursChart && typeof window.hoursChart.destroy === 'function') window.hoursChart.destroy();
-    window.hoursChart = new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: jobNames,
-        datasets: [{
-          label: 'Hours by Workplace',
-          data: jobHours,
-          backgroundColor: ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'],
-          borderRadius: 8
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: 'Work Hours by Workplace',
-            font: { family: 'Outfit', size: 18, weight: 600 },
-            color: '#2d2d2d'
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#333' }, grid: { display: false } },
-          y: { ticks: { color: '#333' }, beginAtZero: true }
-        }
-      }
-    });
-
-    // Weekly Income Chart
-    const weeklyIncome = {};
-    shifts.forEach(s => {
-      const w = getWeek(s.date);
-      weeklyIncome[w] ??= { income: 0 };
-      weeklyIncome[w].income += s.income;
-    });
-
-    const weeks = Object.keys(weeklyIncome);
-    const inc = weeks.map(w => weeklyIncome[w].income);
-
-    if (window.incomeChart && typeof window.incomeChart.destroy === 'function') window.incomeChart.destroy();
-    window.incomeChart = new Chart(ctx2, {
-      type: 'line',
-      data: {
-        labels: weeks,
-        datasets: [{
-          label: 'Weekly Income (AUD)',
-          data: inc,
-          borderColor: '#a78bfa',
-          backgroundColor: 'rgba(200,182,255,0.2)',
-          tension: 0.4,
-          pointBackgroundColor: '#ffb7c5',
-          pointRadius: 5,
-          fill: true
-        }]
-      },
-      options: { plugins: { legend: { position: 'bottom' } } }
-    });
-
-    // Donut Charts
-    const jobTotals = {};
-    shifts.forEach(s => {
-      jobTotals[s.job] ??= { hours: 0, income: 0 };
-      jobTotals[s.job].hours += s.hours;
-      jobTotals[s.job].income += s.income;
-    });
-
-    const jobIncomes = Object.keys(jobTotals).map(j => jobTotals[j].income);
-    const colors = ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'];
-
-    if (window.hoursDonutChart && typeof window.hoursDonutChart.destroy === 'function') window.hoursDonutChart.destroy();
-    if (window.incomeDonutChart && typeof window.incomeDonutChart.destroy === 'function') window.incomeDonutChart.destroy();
-
-    window.hoursDonutChart = new Chart(document.getElementById('hoursDonutChart'), {
-      type: 'doughnut',
-      data: { labels: jobNames, datasets: [{ data: jobHours, backgroundColor: colors.slice(0, jobNames.length) }] },
-      options: { plugins: { legend: { position: 'right' } } }
-    });
-
-    window.incomeDonutChart = new Chart(document.getElementById('incomeDonutChart'), {
-      type: 'doughnut',
-      data: { labels: jobNames, datasets: [{ data: jobIncomes, backgroundColor: colors.slice(0, jobNames.length) }] },
-      options: { plugins: { legend: { position: 'right' } } }
-    });
-  }
+  // Charts (reuse your original chart logic)
+  renderCharts();
 }
 
-/* ---------- CALENDAR HEATMAP (Larger Blocks, Perfect Alignment) ---------- */
-const calendarDiv = document.getElementById("calendarHeatmapGrid");
-if (calendarDiv) {
-  calendarDiv.innerHTML = "";
+function renderCharts() {
+  if (shifts.length === 0) return;
+  const ctx1 = document.getElementById("hoursChart");
+  const ctx2 = document.getElementById("incomeChart");
 
-  if (shifts.length === 0) {
-    calendarDiv.innerHTML = "<p>No shifts recorded yet.</p>";
-  } else {
-    const dayHours = {};
-    shifts.forEach(s => {
-      dayHours[s.date] = (dayHours[s.date] || 0) + s.hours;
-    });
+  const hoursByWorkplace = {};
+  shifts.forEach(shift => {
+    const job = shift.job || "Other";
+    hoursByWorkplace[job] = (hoursByWorkplace[job] || 0) + shift.hours;
+  });
 
-    // 📅 Current month range
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const jobNames = Object.keys(hoursByWorkplace);
+  const jobHours = Object.values(hoursByWorkplace);
 
-    // 🧾 Month label
-    const heading = document.querySelector("h2");
-    if (heading && !document.getElementById("monthLabel")) {
-      heading.insertAdjacentHTML("afterend", `
-        <p id="monthLabel" style="color:#555;font-weight:500;margin-top:-10px;margin-bottom:18px;">
-          ${monthName}
-        </p>
-      `);
+  if (window.hoursChart && window.hoursChart.destroy) window.hoursChart.destroy();
+  window.hoursChart = new Chart(ctx1, {
+    type: "bar",
+    data: {
+      labels: jobNames,
+      datasets: [{
+        label: "Hours by Workplace",
+        data: jobHours,
+        backgroundColor: ['#c8b6ff', '#a0e7e5', '#ffb7c5', '#ffd6a5', '#bde0fe'],
+        borderRadius: 8
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  const weeklyIncome = {};
+  shifts.forEach(s => {
+    const w = getWeek(s.date);
+    weeklyIncome[w] ??= { income: 0 };
+    weeklyIncome[w].income += s.income;
+  });
+
+  const weeks = Object.keys(weeklyIncome);
+  const inc = weeks.map(w => weeklyIncome[w].income);
+
+  if (window.incomeChart && window.incomeChart.destroy) window.incomeChart.destroy();
+  window.incomeChart = new Chart(ctx2, {
+    type: "line",
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: "Weekly Income (AUD)",
+        data: inc,
+        borderColor: "#a78bfa",
+        backgroundColor: "rgba(200,182,255,0.2)",
+        fill: true,
+        tension: 0.4
+      }]
     }
-
-    // 🎨 Color scale
-    const getColor = (hrs) => {
-      if (hrs === 0) return "#f4f1ff";
-      if (hrs < 3) return "#c4b5fd";
-      if (hrs < 6) return "#7dd3fc";
-      if (hrs < 9) return "#f9a8d4";
-      return "#fb7185";
-    };
-
-    // 🧠 Weekday header
-    const weekdays = ["S", "M", "T", "W", "T", "F", "S"];
-    const headerHTML = weekdays.map(d => `<div>${d}</div>`).join("");
-
-    const weekdayHeader = document.createElement("div");
-    weekdayHeader.id = "weekdayHeader";
-    weekdayHeader.style.display = "grid";
-    weekdayHeader.style.gridTemplateColumns = "repeat(7, 1fr)";
-    weekdayHeader.style.textAlign = "center";
-    weekdayHeader.style.gap = "6px";
-    weekdayHeader.style.marginBottom = "12px";
-    weekdayHeader.style.fontWeight = "600";
-    weekdayHeader.style.color = "#333";
-    weekdayHeader.innerHTML = headerHTML;
-    calendarDiv.parentNode.insertBefore(weekdayHeader, calendarDiv);
-
-    // 🧩 Calendar grid
-    const firstDayOffset = firstDay.getDay();
-    const totalDays = lastDay.getDate();
-
-    let html = "";
-    for (let i = 0; i < firstDayOffset; i++) html += `<div></div>`;
-
-    for (let d = 1; d <= totalDays; d++) {
-      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const hrs = dayHours[dateStr] || 0;
-
-      html += `
-        <div title="${dateStr}: ${hrs.toFixed(1)} hrs"
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            background: ${getColor(hrs)};
-            border-radius: 10px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.08);
-            color: ${hrs > 0 ? '#222' : '#aaa'};
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin: 0 auto;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-          "
-          onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 0 12px rgba(0,0,0,0.15)'"
-          onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 0 8px rgba(0,0,0,0.08)'"
-        >${d}</div>
-      `;
-    }
-
-    // 🧱 Perfect grid alignment
-    calendarDiv.style.display = "grid";
-    calendarDiv.style.gridTemplateColumns = "repeat(7, 1fr)";
-    calendarDiv.style.gap = "12px";
-    calendarDiv.style.padding = "10px 0";
-    calendarDiv.style.textAlign = "center";
-    calendarDiv.style.justifyItems = "center";
-    calendarDiv.innerHTML = html;
-  }
+  });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderDetailedCalendar();
-
-  // Hook up export button
-  document.getElementById("exportCalendarBtn").addEventListener("click", exportToICS);
-});
-
+/* =========================================
+   PAGE: CALENDAR
+   ========================================= */
 function renderDetailedCalendar() {
   const container = document.getElementById("calendarContainer");
-  if (!container) return; // ✅ Prevents error on non-calendar pages
+  const calendarDiv = document.getElementById("calendarHeatmapGrid");
 
-  container.innerHTML = "";
-
-  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+  if (!container && !calendarDiv) return;
 
   if (shifts.length === 0) {
-    container.innerHTML = `<p class="no-shifts">No shifts found. Add shifts to view them here.</p>`;
+    if (container) container.innerHTML = `<p>No shifts found.</p>`;
+    if (calendarDiv) calendarDiv.innerHTML = `<p>No shifts recorded yet.</p>`;
     return;
   }
 
   // Group shifts by date
   const grouped = {};
   shifts.forEach(shift => {
-    const date = shift.date;
-    if (!grouped[date]) grouped[date] = [];
-    grouped[date].push(shift);
+    if (!grouped[shift.date]) grouped[shift.date] = [];
+    grouped[shift.date].push(shift);
   });
 
-  // Render grouped shifts
-  Object.keys(grouped)
-    .sort((a, b) => new Date(a) - new Date(b))
-    .forEach(date => {
-      const card = document.createElement("div");
-      card.className = "calendar-date-card";
-      card.innerHTML = `
-        <h3>${new Date(date).toDateString()}</h3>
-        <ul>
-          ${grouped[date]
-            .map(
-              shift => `
-              <li>
-                <strong>${shift.job || shift.workplace || "Work"}</strong> • 
-                ${shift.start || shift.startTime || "?"}–${shift.end || shift.endTime || "?"} 
-                (${shift.hours?.toFixed(2) || 0} hrs, $${shift.income?.toFixed(2) || 0})
-              </li>`
-            )
-            .join("")}
-        </ul>
-      `;
-      container.appendChild(card);
-    });
-}
-
-
-function exportToICS() {
-  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
-
-  if (shifts.length === 0) {
-    alert("No shifts to export!");
-    return;
+  if (container) {
+    container.innerHTML = "";
+    Object.keys(grouped)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .forEach(date => {
+        const card = document.createElement("div");
+        card.className = "calendar-date-card";
+        card.innerHTML = `
+          <h3>${new Date(date).toDateString()}</h3>
+          <ul>
+            ${grouped[date]
+              .map(shift => `
+                <li>
+                  <strong>${shift.job}</strong> • ${shift.start_time}–${shift.end_time} 
+                  (${shift.hours.toFixed(2)} hrs, $${shift.income.toFixed(2)})
+                </li>
+              `)
+              .join("")}
+          </ul>
+        `;
+        container.appendChild(card);
+      });
   }
-
-  let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//RosterFlow//EN\n";
-
-  shifts.forEach(shift => {
-    const start = new Date(`${shift.date}T${shift.start}`);
-    const end = new Date(`${shift.date}T${shift.end}`);
-
-    const formatDate = date =>
-      date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-
-    icsContent += `BEGIN:VEVENT\n`;
-    icsContent += `SUMMARY:${shift.job || "Shift"}\n`;
-    icsContent += `DTSTART:${formatDate(start)}\n`;
-    icsContent += `DTEND:${formatDate(end)}\n`;
-    icsContent += `DESCRIPTION:Worked ${shift.hours?.toFixed(2)} hours, earned $${shift.income?.toFixed(2)}\n`;
-    icsContent += `END:VEVENT\n`;
-  });
-
-  icsContent += "END:VCALENDAR";
-
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "RosterFlow_Shifts.ics";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 /* =========================================
    PAGE: INCOME
    ========================================= */
-if (document.getElementById("incomeFlowChart")) {
-  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
-
-  const incomeSummary = document.getElementById("incomeSummary");
-  const ctx = document.getElementById("incomeFlowChart");
-
+function initIncomePage() {
   if (shifts.length === 0) {
-    incomeSummary.innerHTML = `<p>No income data yet. Add your shifts first.</p>`;
-  } else {
-    /* ---------- 1️⃣ Group Income by Week ---------- */
-    const weeklyIncome = {};
-    shifts.forEach(s => {
-      const week = getWeek(s.date);
-      weeklyIncome[week] = (weeklyIncome[week] || 0) + s.income;
-    });
-
-    const weeks = Object.keys(weeklyIncome).sort((a, b) => new Date(a) - new Date(b));
-    const incomes = weeks.map(w => weeklyIncome[w]);
-
-    /* ---------- 2️⃣ Render Weekly Income Chart ---------- */
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: weeks,
-        datasets: [{
-          label: "Weekly Income (AUD)",
-          data: incomes,
-          borderColor: "#a78bfa",
-          backgroundColor: "rgba(200,182,255,0.25)",
-          tension: 0.4,
-          fill: true,
-          pointBackgroundColor: "#ffb7c5",
-          pointRadius: 5
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: "Weekly Income Trend",
-            color: "#333",
-            font: { family: "Outfit", size: 16, weight: "600" }
-          }
-        },
-        scales: {
-          x: { ticks: { color: "#444" }, grid: { display: false } },
-          y: { ticks: { color: "#444" }, beginAtZero: true }
-        }
-      }
-    });
-
-    /* ---------- 3️⃣ Calculate Monthly + Total Income ---------- */
-    const now = new Date();
-    const thisMonth = now.getMonth();
-    const monthlyIncome = shifts
-      .filter(s => new Date(s.date).getMonth() === thisMonth)
-      .reduce((sum, s) => sum + s.income, 0);
-
-    const totalIncome = shifts.reduce((sum, s) => sum + s.income, 0);
-
-    /* ---------- 4️⃣ Display Summary ---------- */
-    incomeSummary.innerHTML = `
-      <strong>This Month:</strong> $${monthlyIncome.toFixed(2)}<br>
-      <strong>Total Overall:</strong> $${totalIncome.toFixed(2)}
-    `;
+    document.getElementById("incomeSummary").innerHTML = `<p>No income data yet.</p>`;
+    return;
   }
+
+  const weeklyIncome = {};
+  shifts.forEach(s => {
+    const w = getWeek(s.date);
+    weeklyIncome[w] = (weeklyIncome[w] || 0) + s.income;
+  });
+
+  const weeks = Object.keys(weeklyIncome).sort((a, b) => new Date(a) - new Date(b));
+  const incomes = weeks.map(w => weeklyIncome[w]);
+
+  new Chart(document.getElementById("incomeFlowChart"), {
+    type: "line",
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: "Weekly Income (AUD)",
+        data: incomes,
+        borderColor: "#a78bfa",
+        backgroundColor: "rgba(200,182,255,0.25)",
+        fill: true,
+        tension: 0.4
+      }]
+    }
+  });
+
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const monthly = shifts.filter(s => new Date(s.date).getMonth() === thisMonth)
+                        .reduce((sum, s) => sum + s.income, 0);
+  const total = shifts.reduce((sum, s) => sum + s.income, 0);
+
+  document.getElementById("incomeSummary").innerHTML = `
+    <strong>This Month:</strong> $${monthly.toFixed(2)}<br>
+    <strong>Total Overall:</strong> $${total.toFixed(2)}
+  `;
 }
+
 /* =========================================
-   PAGE: CONFLICTS (Overlap + Availability Suggestions)
+   PAGE: CONFLICTS
    ========================================= */
-if (document.getElementById("conflictList")) {
-  const shifts = JSON.parse(localStorage.getItem("shifts")) || [];
+function initConflictsPage() {
   const list = document.getElementById("conflictList");
+  if (!list) return;
 
   if (shifts.length === 0) {
     list.innerHTML = `<p class="no-conflicts">No shifts added yet.</p>`;
-  } else {
-    const conflicts = [];
-    const availabilityAdvice = {};
+    return;
+  }
 
-    // Sort by date for clarity
-    shifts.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const conflicts = [];
+  shifts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Compare each pair for overlaps
-    for (let i = 0; i < shifts.length; i++) {
-      for (let j = i + 1; j < shifts.length; j++) {
-        const s1 = shifts[i];
-        const s2 = shifts[j];
+  for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+      const s1 = shifts[i];
+      const s2 = shifts[j];
+      if (s1.date === s2.date && checkOverlap(s1, s2)) {
+        const startA = new Date(`${s1.date}T${s1.start_time}`);
+        const endA = new Date(`${s1.date}T${s1.end_time}`);
+        const startB = new Date(`${s2.date}T${s2.start_time}`);
+        const endB = new Date(`${s2.date}T${s2.end_time}`);
+        const overlapStart = new Date(Math.max(startA, startB));
+        const overlapEnd = new Date(Math.min(endA, endB));
+        const overlapHours = (overlapEnd - overlapStart) / 3600000;
 
-        if (s1.date === s2.date && checkOverlap(s1, s2)) {
-          // Calculate overlap window
-          const startA = new Date(`${s1.date}T${s1.start}`);
-          const endA = new Date(`${s1.date}T${s1.end}`);
-          const startB = new Date(`${s2.date}T${s2.start}`);
-          const endB = new Date(`${s2.date}T${s2.end}`);
-
-          const overlapStart = new Date(Math.max(startA, startB));
-          const overlapEnd = new Date(Math.min(endA, endB));
-          const overlapHours = (overlapEnd - overlapStart) / 3600000;
-
-          conflicts.push({
-            date: s1.date,
-            shiftA: s1,
-            shiftB: s2,
-            overlapStart,
-            overlapEnd,
-            overlapHours,
-          });
-        }
+        conflicts.push({ date: s1.date, s1, s2, overlapStart, overlapEnd, overlapHours });
       }
     }
+  }
 
-    // Render conflicts first
-    if (conflicts.length > 0) {
-      conflicts.forEach((c) => {
-        const li = document.createElement("li");
-        li.className = "conflict-item";
-
-        const formatTime = (t) =>
-          t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        const start = formatTime(c.overlapStart);
-        const end = formatTime(c.overlapEnd);
-
-        li.innerHTML = `
-          <h3>${new Date(c.date).toDateString()}</h3>
-          <p><strong>Shift 1:</strong> ${c.shiftA.job} — ${c.shiftA.start} to ${c.shiftA.end}</p>
-          <p><strong>Shift 2:</strong> ${c.shiftB.job} — ${c.shiftB.start} to ${c.shiftB.end}</p>
-          <p class="conflict-details">⚠️ Overlap from <strong>${start}</strong> to <strong>${end}</strong> (${c.overlapHours.toFixed(2)} hrs)</p>
-          <p class="availability-advice">Block availability between ${start}–${end} on ${new Date(
-          c.date
-        ).toDateString()} at both <strong>${c.shiftA.job}</strong> and <strong>${
-          c.shiftB.job
-        }</strong>.</p>
-        `;
-        list.appendChild(li);
-      });
-    } else {
-      list.innerHTML = `<p class="no-conflicts">✅ No overlapping shifts detected!</p>`;
-    }
-
-    // Generate per-day “block availability” suggestions
-    shifts.forEach((shift) => {
-      if (!availabilityAdvice[shift.date]) {
-        availabilityAdvice[shift.date] = new Set();
-      }
-      availabilityAdvice[shift.date].add(shift.job);
-    });
-
-    // Add availability section
-    const adviceHeader = document.createElement("h2");
-    adviceHeader.textContent = "Availability Suggestions";
-    adviceHeader.style.marginTop = "2rem";
-    adviceHeader.style.marginBottom = "0.5rem";
-    list.appendChild(adviceHeader);
-
-    const adviceUl = document.createElement("ul");
-    adviceUl.className = "availability-list";
-
-    Object.entries(availabilityAdvice).forEach(([date, jobs]) => {
-      const bookedJobs = Array.from(jobs);
-      const allWorkplaces = JSON.parse(localStorage.getItem("workplaces")) || [];
-      const blocked = allWorkplaces.filter(
-        (w) => !bookedJobs.includes(w)
-      );
-
+  if (conflicts.length > 0) {
+    conflicts.forEach(c => {
       const li = document.createElement("li");
-      li.className = "availability-item";
+      li.className = "conflict-item";
+      const formatTime = t => t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       li.innerHTML = `
-        <h3>${new Date(date).toDateString()}</h3>
-        <p><strong>Booked at:</strong> ${bookedJobs.join(", ")}</p>
-        ${
-          blocked.length > 0
-            ? `<p class="block-advice">Block this date for: <strong>${blocked.join(
-                ", "
-              )}</strong></p>`
-            : `<p class="block-advice">No other workplaces to block — all free.</p>`
-        }
+        <h3>${new Date(c.date).toDateString()}</h3>
+        <p><strong>${c.s1.job}</strong> (${c.s1.start_time}–${c.s1.end_time}) overlaps with 
+           <strong>${c.s2.job}</strong> (${c.s2.start_time}–${c.s2.end_time})</p>
+        <p>⚠️ Overlap: ${formatTime(c.overlapStart)}–${formatTime(c.overlapEnd)} 
+           (${c.overlapHours.toFixed(2)} hrs)</p>
       `;
-      adviceUl.appendChild(li);
+      list.appendChild(li);
     });
-
-    list.appendChild(adviceUl);
+  } else {
+    list.innerHTML = `<p class="no-conflicts">✅ No overlapping shifts detected!</p>`;
   }
 }
-// ✅ Safely attach export button listener only if it exists
-document.addEventListener("DOMContentLoaded", () => {
-  const exportBtn = document.getElementById("exportCalendarBtn");
-  if (exportBtn) {
-    exportBtn.addEventListener("click", exportToICS);
-  }
-});
+
+/* =========================================
+   LOGOUT
+   ========================================= */
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+  });
+}
